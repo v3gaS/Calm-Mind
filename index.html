@@ -10,74 +10,106 @@
 </head>
 <body>
     <div id="app">
-        <header>
+        <header class="app-header">
+            <img src="Logo.png" alt="CalmMind Logo" class="app-logo">
             <h1>CalmMind</h1>
-            <p>Advanced Binaural Beat Generator</p>
+            <p class="tagline">Achieve Your Ideal Mood</p>
         </header>
         
-        <section id="questionnaire" class="glass-section">
-            <h2>How are you feeling?</h2>
-            <form id="userInputForm">
-                <div class="form-group">
-                    <label for="stressLevel">Stress Level (1-10):</label>
-                    <div class="range-container">
-                        <input type="range" id="stressLevel" name="stressLevel" min="1" max="10" value="5">
-                        <span id="stressValue" class="range-value">5</span>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="duration">Duration (minutes):</label>
-                    <select id="duration" name="duration">
-                        <option value="5">5 minutes</option>
-                        <option value="10" selected>10 minutes</option>
-                        <option value="20">20 minutes</option>
-                        <option value="30">30 minutes</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="ambientSound">Ambient Sound:</label>
-                    <select id="ambientSound" name="ambientSound">
-                        <option value="none">None</option>
-                        <option value="rain">Rain</option>
-                        <option value="ocean">Ocean Waves</option>
-                        <option value="forest">Forest</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="soundType">Sound Type (Brain Function):</label>
-                    <select id="soundType">
-                        <option value="binaural" selected>Binaural Beats (Relaxation)</option>
-                        <option value="pinkNoise">Pink Noise (Deep Sleep & Memory)</option>
-                        <option value="isochronic">Isochronic Tones (Focus & Meditation)</option>
-                        <option value="nature">Nature Sounds (Stress Relief)</option>
-                        <option value="solfeggio">Solfeggio Frequencies (Healing & Harmony)</option>
-                        <option value="monaural">Monaural Beats (Balance & Clarity)</option>
-                        <option value="gamma">Gamma Wave Entrainment (Cognitive Function)</option>
-                        <option value="hrv">HRV Coherence (Heart-Brain Alignment)</option>
-                        <option value="soundBath">Sound Bath (Deep Meditation & Healing)</option>
-                        <option value="psychoacoustic">Psychoacoustic Harmony (Emotional Balance)</option>
-                    </select>
-                </div>
-                
-                <button type="button" id="generateButton" class="glass-button">Generate Track</button>
-            </form>
+        <section id="settings" class="glass-section">
+            <h2>Settings</h2>
+            <div class="form-group">
+                <label for="themeSelector">Theme:</label>
+                <select id="themeSelector" name="theme">
+                    <option value="dark">Dark (Default)</option>
+                    <option value="light">Light</option>
+                    <option value="space-gray">Space Gray</option>
+                    <option value="silver">Silver</option>
+                    <option value="gold">Gold</option>
+                    <option value="midnight-green">Midnight Green</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="animationsToggle">Animations:</label>
+                <select id="animationsToggle" name="animations">
+                    <option value="enabled">Enabled</option>
+                    <option value="disabled">Disabled</option>
+                </select>
+            </div>
         </section>
         
-        <section id="playerSection" class="glass-section hidden">
-            <h2>Your Personalized Track</h2>
-            <div class="player-controls">
-                <button id="playBtn" class="glass-button">Play</button>
-                <button id="stopButton" class="glass-button stop-button" disabled>Stop</button>
-                <div class="volume-control">
-                    <label for="volume">Volume:</label>
-                    <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
-                </div>
+        <section id="settingsSection" class="glass-section settings-section">
+            <h2>How are you feeling?</h2>
+
+            <div class="form-group range-container">
+                <label for="stressLevel">Stress Level (1-10):</label>
+                <input type="range" id="stressLevel" min="1" max="10" value="5">
+                <span class="range-value" id="stressLevelValue">5</span>
             </div>
+
+            <div class="form-group">
+                <label for="duration">Duration (minutes):</label>
+                <select id="duration">
+                    <option value="5">5 minutes</option>
+                    <option value="10" selected>10 minutes</option>
+                    <option value="15">15 minutes</option>
+                    <option value="20">20 minutes</option>
+                    <option value="30">30 minutes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="ambientSound">Ambient Sound:</label>
+                <select id="ambientSound">
+                    <option value="none">None</option>
+                    <option value="rain">Rain</option>
+                    <option value="forest">Forest</option>
+                    <option value="ocean">Ocean</option>
+                    <option value="cafe">Cafe</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="soundType">Sound Type (Brain Function):</label>
+                <select id="soundType">
+                    <option value="binauralRelax">Binaural Beats (Relaxation)</option>
+                    <option value="binauralFocus">Binaural Beats (Focus)</option>
+                    <option value="binauralSleep">Binaural Beats (Sleep)</option>
+                    <option value="isochronicEnergy">Isochronic Tones (Energy)</option>
+                    <option value="isochronicMeditate">Isochronic Tones (Meditation)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="visualizerType">Visualizer Type:</label>
+                <select id="visualizerType">
+                    <option value="particles" selected>Particles</option>
+                    <option value="meshWave">3D Mesh Wave</option>
+                    <!-- Add other visualizer types here -->
+                </select>
+            </div>
+
+            <button id="generateButton">Generate Track</button>
+        </section>
+        
+        <section id="playerSection" class="hidden glass-section player-section">
+            <h2>Now Playing</h2>
+            <p id="trackInfo">Generate a track to start</p>
             <canvas id="visualizer"></canvas>
-            <p id="trackInfo" class="track-info"></p>
+            <div id="spatialIndicator" class="spatial-indicator hidden">
+                <div class="wave left"></div>
+                <div class="wave right"></div>
+            </div>
+            <div class="player-controls">
+                <button id="playBtn" class="control-button">Play</button>
+                <button id="stopButton" class="control-button">Stop</button>
+                <button id="skipBtn" class="control-button">Skip</button>
+                <button id="loopBtn" class="control-button">Loop</button>
+            </div>
+            <div class="volume-control">
+                <label for="volume">Volume:</label>
+                <input type="range" id="volume" min="0" max="1" step="0.01" value="0.7">
+            </div>
         </section>
         
         <section id="info" class="glass-section">
@@ -96,7 +128,7 @@
         </section>
         
         <footer>
-            <p>&copy; 2023 CalmMind - Advanced Audio for Mental Wellbeing</p>
+            <p>&copy; 2025 CalmMind. All rights reserved.</p>
         </footer>
     </div>
     

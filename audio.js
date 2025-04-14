@@ -3,14 +3,84 @@ let masterGain;
 let binauralOsc1, binauralOsc2;
 let ambientOsc;
 let soundTypeNodes = [];
+let analyser;
 const AMBIENT_VOLUME = 0.2;
 
 // Initialize audio context
 function initAudio() {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    masterGain = audioContext.createGain();
-    masterGain.connect(audioContext.destination);
-    masterGain.gain.value = 0.5;
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioContext.createGain();
+        masterGain.connect(audioContext.destination);
+        masterGain.gain.value = 0.5;
+        
+        // Create analyzer node
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512; // Increased for better frequency resolution
+        masterGain.connect(analyser);
+        
+        console.log("Audio initialization complete. Context state:", audioContext.state);
+        return true;
+    } catch (error) {
+        console.error("Error initializing audio:", error);
+        return false;
+    }
+}
+
+// Expose function to get the analyser
+window.getAnalyser = function() {
+    if (!analyser && audioContext) {
+        // Create if it doesn't exist yet
+        console.log("Creating new analyzer as none exists");
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512; 
+        masterGain.connect(analyser);
+    }
+    
+    if (!analyser) {
+        console.error("Analyzer not available! Audio context may not be initialized.");
+        return null;
+    }
+    
+    console.log("Returning analyzer with fftSize:", analyser.fftSize);
+    return analyser;
+}
+
+// Generate track - main entry point called from app.js
+function generateTrack(stressLevel, duration, ambientSound, soundType) {
+    console.log('Generating track with settings:', { stressLevel, duration, ambientSound, soundType });
+    
+    // Initialize audio context if not already done
+    if (!audioContext) {
+        try {
+            initAudio();
+            console.log("Audio context initialized successfully:", audioContext.state);
+        } catch (error) {
+            console.error("Failed to initialize audio context:", error);
+            return false;
+        }
+    }
+    
+    // Make sure audio context is running
+    if (audioContext.state === 'suspended') {
+        try {
+            audioContext.resume();
+            console.log("Audio context resumed from suspended state");
+        } catch (error) {
+            console.error("Failed to resume audio context:", error);
+            return false;
+        }
+    }
+    
+    // Generate the actual audio based on selected type
+    try {
+        generatePersonalizedTrack(stressLevel, duration, ambientSound, soundType);
+        return true; // Indicate success
+    } catch (error) {
+        console.error("Error generating track:", error);
+        alert("There was an error generating the track. Please try again.");
+        return false;
+    }
 }
 
 // Generate personalized track based on user input
@@ -23,12 +93,31 @@ function generatePersonalizedTrack(stressLevel, duration, ambientSound, soundTyp
     });
     soundTypeNodes = [];
     
-    if (soundType === 'binaural') {
-        generateBinauralBeats(stressLevel, duration);
+    console.log("Generating track with soundType:", soundType);
+    
+    // Handle both old and new sound type values with mapping
+    if (soundType === 'binauralRelax' || soundType === 'binauralFocus' || 
+        soundType === 'binauralSleep' || soundType === 'binaural') {
+        // For new specific binaural types, adjust the stress level based on intent
+        let adjustedStressLevel = stressLevel;
+        if (soundType === 'binauralFocus') {
+            adjustedStressLevel = Math.min(stressLevel + 2, 10); // Higher frequency for focus
+        } else if (soundType === 'binauralSleep') {
+            adjustedStressLevel = Math.max(stressLevel - 2, 1); // Lower frequency for sleep
+        }
+        generateBinauralBeats(adjustedStressLevel, duration);
+    } else if (soundType === 'isochronicEnergy' || soundType === 'isochronicMeditate' || 
+               soundType === 'isochronic') {
+        // For new specific isochronic types, adjust the stress level based on intent
+        let adjustedStressLevel = stressLevel;
+        if (soundType === 'isochronicEnergy') {
+            adjustedStressLevel = Math.min(stressLevel + 3, 10); // Higher pulse for energy
+        } else if (soundType === 'isochronicMeditate') {
+            adjustedStressLevel = Math.max(stressLevel - 2, 1); // Lower pulse for meditation
+        }
+        generateIsochronicTones(adjustedStressLevel, duration);
     } else if (soundType === 'pinkNoise') {
         generatePinkNoise(duration);
-    } else if (soundType === 'isochronic') {
-        generateIsochronicTones(stressLevel, duration);
     } else if (soundType === 'nature') {
         generateNatureEnhancedSound(ambientSound, duration);
     } else if (soundType === 'solfeggio') {
@@ -45,6 +134,10 @@ function generatePersonalizedTrack(stressLevel, duration, ambientSound, soundTyp
         generatePsychoacousticMood(stressLevel, duration);
     } else if (soundType === 'neuroacoustic') {
         generateNeuroacoustic(stressLevel, duration);
+    } else {
+        console.error("Unknown sound type:", soundType);
+        // Default to binaural beats as a fallback
+        generateBinauralBeats(stressLevel, duration);
     }
     
     if (ambientSound !== 'none' && soundType !== 'nature' && soundType !== 'soundBath') {
@@ -53,15 +146,27 @@ function generatePersonalizedTrack(stressLevel, duration, ambientSound, soundTyp
     
     // Set duration
     setTimeout(stopCurrentTrack, duration * 60 * 1000);
-    
-    // Pass the soundType to the visualizer
-    setupVisualizer(audioContext, masterGain, soundType);
     setPlayingState(true);
+}
+
+// Toggle spatial audio indicator visibility
+function toggleSpatialIndicator(show) {
+    const indicator = document.getElementById('spatialIndicator');
+    if (indicator) {
+        if (show) {
+            indicator.classList.remove('hidden');
+        } else {
+            indicator.classList.add('hidden');
+        }
+    }
 }
 
 // Generate binaural beats based on stress level
 function generateBinauralBeats(stressLevel, duration = 10) {
     console.log('Generating binaural beats with stress level:', stressLevel, 'and duration:', duration, 'minutes');
+    
+    // Show spatial indicator for binaural beats as they use left/right channels
+    toggleSpatialIndicator(true);
     
     // Increase base frequency to audible range while keeping beat frequencies appropriate
     // Human hearing typically starts around 20Hz
@@ -157,9 +262,6 @@ function generateBinauralBeats(stressLevel, duration = 10) {
     binauralOsc1.stop(audioContext.currentTime + durationInSeconds);
     binauralOsc2.stop(audioContext.currentTime + durationInSeconds);
     console.log('Binaural beats scheduled to stop after', durationInSeconds, 'seconds');
-    
-    // Setup visualizer with specific sound type
-    setupVisualizer(audioContext, masterGain, 'binaural');
 }
 
 // Generate pink noise for deep sleep and memory
@@ -361,6 +463,11 @@ function generateAmbientSound(type, duration = 10) {
 
 // Stop current track
 function stopCurrentTrack() {
+    console.log('Stopping current track');
+    
+    // Hide spatial indicator when stopping
+    toggleSpatialIndicator(false);
+    
     if (binauralOsc1) {
         try {
             binauralOsc1.stop();
@@ -759,6 +866,9 @@ function generateHRVCoherence(duration = 10) {
 function generateSoundBath(duration = 10) {
     console.log('Generating sound bath with duration:', duration, 'minutes');
     
+    // Show spatial indicator for sound bath as it uses spatial positioning
+    toggleSpatialIndicator(true);
+    
     // Singing bowl frequencies (traditional Tibetan bowls)
     const bowlFreqs = [
         264, // C4 - Root chakra
@@ -939,6 +1049,9 @@ function generateSoundBath(duration = 10) {
 function generatePsychoacousticMood(stressLevel, duration = 10) {
     console.log('Generating psychoacoustic mood enhancement with stress level:', stressLevel, 'and duration:', duration, 'minutes');
     
+    // Show spatial indicator for psychoacoustic mood as it uses panning
+    toggleSpatialIndicator(true);
+    
     // Harmonic series based on mood
     const fundamentalFreq = stressLevel <= 3 ? 432 : stressLevel <= 6 ? 396 : 528; // Different base frequencies for different moods
     const harmonics = [1, 1.5, 2, 2.5, 3, 4]; // Harmonic series for rich timbre
@@ -1058,4 +1171,37 @@ function generatePsychoacousticMood(stressLevel, duration = 10) {
     }, (durationInSeconds - 2) * 1000);
     
     console.log('Psychoacoustic mood enhancement scheduled to stop after', durationInSeconds, 'seconds');
-} 
+}
+
+// Set playing state (exported for use in app.js)
+function setPlayingState(state) {
+    console.log('Audio playback state:', state ? 'Playing' : 'Paused/Stopped');
+    
+    if (state) {
+        // Resume audio context if suspended
+        if (audioContext && audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+                console.log('Audio context resumed successfully');
+            }).catch(err => {
+                console.error('Failed to resume audio context:', err);
+            });
+        }
+    } else {
+        // Suspend audio context to save resources
+        if (audioContext && audioContext.state === 'running') {
+            audioContext.suspend().then(() => {
+                console.log('Audio context suspended successfully');
+            }).catch(err => {
+                console.error('Failed to suspend audio context:', err);
+            });
+        }
+    }
+    
+    // Call the visualizer's setPlayingState if it exists
+    if (window.setPlayingState) {
+        window.setPlayingState(state);
+    }
+}
+
+// Export the setPlayingState function
+window.setPlayingState = setPlayingState; 

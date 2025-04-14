@@ -1,283 +1,205 @@
-/* Base styles with modern dark theme and adaptive Apple-inspired themes */
+/* Base styles with modern dark theme inspired by examples */
 :root {
-  --color-bg-primary: #0f0f19;
-  --color-bg-secondary: #161622;
-  --color-accent-primary: #7668f8;
-  --color-accent-secondary: #6c8bef;
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #bdc7df;
-  --color-border: rgba(255, 255, 255, 0.08);
-  --gradient-primary: linear-gradient(135deg, #7668f8, #6c8bef);
-  --box-shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.2);
-  --transition-standard: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Light Mode */
-  --light-bg-primary: #f2f2f7;
-  --light-bg-secondary: #ffffff;
-  --light-accent-primary: #007aff;
-  --light-accent-secondary: #34c759;
-  --light-text-primary: #000000;
-  --light-text-secondary: #6c6c6e;
-  --light-border: rgba(0, 0, 0, 0.1);
-  --light-gradient-primary: linear-gradient(135deg, #007aff, #34c759);
-  /* Space Gray Theme */
-  --space-gray-bg-primary: #1c1c1e;
-  --space-gray-accent-primary: #8e8e93;
-  --space-gray-gradient-primary: linear-gradient(135deg, #8e8e93, #636366);
-  /* Silver Theme */
-  --silver-bg-primary: #e8e8ed;
-  --silver-accent-primary: #007aff;
-  --silver-gradient-primary: linear-gradient(135deg, #007aff, #34c759);
-  /* Gold Theme */
-  --gold-bg-primary: #faf4ef;
-  --gold-accent-primary: #d4af37;
-  --gold-gradient-primary: linear-gradient(135deg, #d4af37, #c49f45);
-  /* Midnight Green Theme */
-  --midnight-green-bg-primary: #004953;
-  --midnight-green-accent-primary: #66cc99;
-  --midnight-green-gradient-primary: linear-gradient(135deg, #66cc99, #44aa77);
+  --bg-color: #14172B; /* Dark Navy Blue */
+  --card-bg-color: #1E213A; /* Slightly Lighter Card Background */
+  --primary-gradient: linear-gradient(135deg, #8A2BE2, #4A00E0); /* Vibrant Purple Gradient */
+  --secondary-gradient: linear-gradient(135deg, #FF6B6B, #EEA8A8); /* Pink/Coral Gradient */
+  --accent-color-1: #7F00FF; /* Violet */
+  --accent-color-2: #00EFFF; /* Cyan */
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0AEC0; /* Lighter Gray */
+  --border-color: rgba(255, 255, 255, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --font-family: 'Poppins', sans-serif;
+  --border-radius-lg: 20px;
+  --border-radius-md: 12px;
+  --border-radius-sm: 8px;
+  --transition-speed: 0.3s ease;
 }
 
-/* Theme-specific body styles */
-body.light-theme {
-  background: linear-gradient(130deg, var(--light-bg-primary), var(--light-bg-secondary));
-  color: var(--light-text-primary);
-}
-
-body.space-gray-theme {
-  background: linear-gradient(130deg, var(--space-gray-bg-primary), #2c2c2e);
-  color: var(--color-text-primary);
-}
-
-body.silver-theme {
-  background: linear-gradient(130deg, var(--silver-bg-primary), #f2f2f7);
-  color: var(--light-text-primary);
-}
-
-body.gold-theme {
-  background: linear-gradient(130deg, var(--gold-bg-primary), #fef8f2);
-  color: var(--light-text-primary);
-}
-
-body.midnight-green-theme {
-  background: linear-gradient(130deg, var(--midnight-green-bg-primary), #005a66);
-  color: var(--color-text-primary);
+/* Reset and Base Body Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(130deg, var(--color-bg-primary), #1a1a2e);
-  color: var(--color-text-primary);
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
   line-height: 1.6;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align top */
+  min-height: 100vh;
+  padding: 2rem; /* Add padding around the app container */
 }
 
-/* Modern container styling */
+/* Main App Container */
 #app {
-  background: rgba(16, 16, 28, 0.6);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  padding: 2.5rem;
-  width: 90%;
-  max-width: 650px;
-  box-shadow: var(--box-shadow-soft);
-}
-
-/* Visualizer with premium styling and active glow */
-#visualizer {
+  background-color: transparent; /* Make container transparent */
+  backdrop-filter: none;
+  border: none;
+  border-radius: 0;
+  padding: 0; /* Remove padding */
   width: 100%;
-  height: 200px;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 16px;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
-  margin-top: 20px;
-  transition: var(--transition-standard);
+  max-width: 400px; /* Adjusted max-width slightly for mobile view */
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Spacing between sections */
 }
 
-#visualizer.active {
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 10px rgba(118, 104, 248, 0.5);
-  animation: glow 2s ease-in-out infinite alternate;
+/* App Header Styling */
+.app-header {
+  text-align: center;
+  margin-bottom: 1.5rem; /* Space below header */
 }
 
-@keyframes glow {
-  from {
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 10px rgba(118, 104, 248, 0.5);
-  }
-  to {
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(118, 104, 248, 0.7);
-  }
+.app-logo {
+  max-width: 80px; /* Control logo size */
+  height: auto;
+  margin-bottom: 0.5rem; /* Space below logo */
+  display: block; /* Ensure it's block for centering */
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* Glassmorphism effect for sections */
+.app-header h1 {
+  font-size: 2.2rem; /* Larger title */
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+  color: var(--text-primary);
+}
+
+.tagline {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 300;
+}
+
+/* Card Styling (Applied to .glass-section) */
 .glass-section {
-  background: rgba(18, 18, 32, 0.5);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  margin: 1.5rem 0;
-  padding: 1.8rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  transition: var(--transition-standard);
+  background-color: var(--card-bg-color);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  box-shadow: 0 8px 25px var(--shadow-color);
+  backdrop-filter: none; /* Remove previous glass effect if any */
+  border: 1px solid var(--border-color);
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
 }
 
 .glass-section:hover {
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px var(--shadow-color);
 }
 
-/* Modern form elements */
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  outline: none;
-  margin: 1rem 0;
+/* Typography */
+h1, h2 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-weight: 600;
+  background: none; /* Remove previous gradient */
+  -webkit-background-clip: unset;
+  background-clip: unset;
 }
 
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  background: var(--gradient-primary);
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transition: var(--transition-standard);
+h1 {
+  font-size: 1.8rem; /* Resetting general H1 size if needed, specific one is in .app-header */
+  text-align: center;
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
+h2 {
+  font-size: 1.5rem; /* Adjusted size */
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 1rem;
 }
 
 select {
   width: 100%;
   padding: 0.8rem 1rem;
-  background: rgba(30, 30, 50, 0.6);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
+  background-color: var(--bg-color); /* Match background */
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
   outline: none;
-  transition: var(--transition-standard);
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23bdc7df' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23A0AEC0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
-  background-size: 1.2rem;
+  background-size: 1rem;
 }
 
 select:focus {
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 0 2px rgba(118, 104, 248, 0.3);
+  border-color: var(--accent-color-1);
+  box-shadow: 0 0 0 3px rgba(127, 0, 255, 0.3);
 }
 
-/* Neumorphic button styling with modern hover effects */
-.glass-button {
-  background: var(--gradient-primary);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 0.8rem 1.8rem;
-  font-weight: 500;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: var(--transition-standard);
-  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2), -5px -5px 10px rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-.glass-button::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
-  height: 100%;
-  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
-  opacity: 0;
-  transition: var(--transition-standard);
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1); /* Subtle track */
+  border-radius: 3px;
+  outline: none;
+  margin: 0.8rem 0;
 }
 
-.glass-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(108, 139, 239, 0.4);
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--accent-color-1); /* Purple thumb */
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  transition: background var(--transition-speed);
 }
 
-.glass-button:hover::after {
-  opacity: 1;
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px; /* Match thumb size better */
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
 }
 
-.glass-button:active {
-  transform: translateY(-1px);
+input[type="range"]:hover::-webkit-slider-thumb {
+  background: var(--accent-color-2); /* Cyan on hover */
 }
 
-/* Typography refinements */
-h1, h2 {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  margin-bottom: 0.5rem;
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--accent-color-1);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
 }
 
-h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  letter-spacing: -0.5px;
+input[type="range"]::-moz-range-track {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
 }
 
-h2 {
-  font-size: 1.8rem;
-  font-weight: 600;
-}
-
-/* Player controls */
-#playerSection {
-  transition: all 0.4s ease-in-out;
-}
-
-#playerSection .flex {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-#trackInfo {
-  font-size: 0.9rem;
-  color: var(--color-text-secondary);
-  margin-top: 0.8rem;
-  text-align: center;
-}
-
-/* Hidden state with transition */
-.hidden {
-  opacity: 0;
-  transform: translateY(10px);
-  pointer-events: none;
-}
-
-/* Form styling */
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
+input[type="range"]:hover::-moz-range-thumb {
+  background: var(--accent-color-2);
 }
 
 .range-container {
@@ -287,123 +209,176 @@ h2 {
 }
 
 .range-value {
-  display: inline-block;
-  width: 2rem;
-  text-align: center;
   font-weight: 600;
-  transition: transform 0.15s ease;
+  color: var(--text-primary);
+  min-width: 2em; /* Ensure space */
+  text-align: right;
 }
 
-/* Button states */
-.glass-button.stop-button {
-  background: rgba(239, 68, 68, 0.8);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+/* Buttons */
+button.control-button, button#generateButton {
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md); /* Slightly less rounded */
+  padding: 0.8rem 1.5rem; /* Consistent padding */
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition-speed);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 100%; /* Make buttons full width within their container */
+  margin: 0.5rem 0; /* Add vertical margin */
 }
 
-.glass-button.stop-button:hover {
-  background: rgba(239, 68, 68, 0.9);
-  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+button.control-button:hover, button#generateButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4); /* Purple glow on hover */
 }
 
-.glass-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
+button.control-button:active, button#generateButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Player section styling */
+button#stopButton {
+    background: var(--secondary-gradient); /* Use pink/coral gradient */
+}
+
+button#stopButton:hover {
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4); /* Coral glow on hover */
+}
+
+button.control-button.active { /* Style for active loop button */
+    background: var(--accent-color-2); /* Cyan when active */
+    box-shadow: 0 4px 15px rgba(0, 239, 255, 0.4);
+}
+
+/* Player Controls Layout */
 .player-controls {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.2rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 buttons per row */
+  gap: 0.8rem;
+  margin-bottom: 1rem;
 }
 
+/* Adjust volume control */
 .volume-control {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 1rem; /* Add space above volume */
+}
+.volume-control label {
+    margin-bottom: 0; /* Remove bottom margin */
+    flex-shrink: 0; /* Prevent label from shrinking */
+}
+.volume-control input[type="range"] {
+    margin: 0; /* Remove default margin */
+    flex-grow: 1; /* Allow slider to take remaining space */
 }
 
-/* Footer styling */
-footer {
-  margin-top: 2rem;
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  text-align: center;
+/* Visualizer */
+#visualizer {
+  width: 100%;
+  height: 150px; /* Slightly smaller */
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin: 1rem 0; /* Adjust vertical margin */
 }
 
-/* Tip styling */
-.tip {
-  background: rgba(118, 104, 248, 0.15);
-  border-left: 3px solid var(--color-accent-primary);
-  padding: 0.8rem 1rem;
-  margin-top: 1rem;
-  border-radius: 4px;
+#visualizer.active {
+  border-color: var(--accent-color-1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 15px rgba(127, 0, 255, 0.5); /* Purple glow */
+  animation: none; /* Remove previous glow animation if desired */
+}
+
+/* Spatial Audio Indicator */
+.spatial-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 50px;
+    margin: 15px 0;
+    position: relative;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius-md);
+    padding: 10px 20px;
+    overflow: hidden;
+}
+
+.wave {
+    width: 30px;
+    height: 30px;
+    background: var(--accent-color-1);
+    border-radius: 50%;
+    position: relative;
+    animation: spatialPulse 1.5s infinite ease-in-out;
+    opacity: 0.8;
+}
+
+.wave.left { animation-delay: 0s; left: 0; }
+.wave.right { animation-delay: 0.5s; right: 0; } /* Stagger animation */
+
+@keyframes spatialPulse {
+    0%, 100% { transform: scale(0.5); opacity: 0.5; }
+    50% { transform: scale(1); opacity: 0.9; box-shadow: 0 0 15px var(--accent-color-1); }
+}
+
+.spatial-indicator.hidden { display: none; }
+
+body.animations-disabled .wave {
+    animation: none;
+    opacity: 0.8;
+    transform: scale(0.75);
+}
+
+/* Track Info */
+#trackInfo {
   font-size: 0.9rem;
-}
-
-/* Animations */
-.pulse-animation {
-  animation: pulse 0.6s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-/* Header styling */
-header {
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
   text-align: center;
-  margin-bottom: 2rem;
+  padding: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: var(--border-radius-sm);
 }
 
-header p {
-  color: var(--color-text-secondary);
-  margin-top: 0;
+/* Hidden State */
+.hidden {
+  display: none; /* Use display none for instant hide/show */
+  opacity: 1; /* Reset opacity */
+  transform: none; /* Reset transform */
+}
+
+/* Footer */
+footer {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Remove previous specific styles that conflict */
+.glass-button, .track-info, .tip, .pulse-animation, header, .light-theme, .space-gray-theme, .silver-theme, .gold-theme, .midnight-green-theme {
+    /* Resetting styles from previous iterations if they exist */
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  :root {
-    font-size: 14px;
-  }
-  
-  #app {
-    padding: 1.5rem;
-    width: 95%;
-  }
-  
-  .player-controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .volume-control {
-    margin-left: 0;
-    width: 100%;
-  }
-  
-  h1 {
-    font-size: 2rem;
-  }
+    body {
+        padding: 1rem; /* Less padding on smaller screens */
+    }
+    #app {
+        max-width: 100%; /* Full width on mobile */
+    }
+     h1 { font-size: 1.6rem; }
+     h2 { font-size: 1.3rem; }
+     .glass-section { padding: 1rem; }
+     button.control-button, button#generateButton { padding: 0.7rem 1.2rem; font-size: 0.9rem; }
 }
 
-/* Track info styling */
-.track-info {
-  transition: opacity 0.3s ease;
-  text-align: center;
-  margin-top: 1rem;
-  padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
+/* Final cleanup: Ensure no duplicate rules exist */
