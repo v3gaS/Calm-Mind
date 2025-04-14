@@ -1,0 +1,40 @@
+{
+  "name": "audio-system",
+  "version": "0.1.0",
+  "description": "A powerful and flexible audio system for therapeutic sound generation",
+  "main": "src/core/AudioManager.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src/",
+    "build": "rollup -c",
+    "start": "node src/example.js"
+  },
+  "dependencies": {
+    "web-audio-api": "^0.2.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.0",
+    "@babel/preset-env": "^7.22.0",
+    "babel-jest": "^29.0.0",
+    "eslint": "^8.42.0",
+    "jest": "^29.0.0",
+    "rollup": "^3.25.0"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "testEnvironment": "jsdom"
+  },
+  "keywords": [
+    "audio",
+    "binaural",
+    "solfeggio",
+    "monaural",
+    "therapy",
+    "sound healing"
+  ],
+  "author": "",
+  "license": "MIT"
+} 

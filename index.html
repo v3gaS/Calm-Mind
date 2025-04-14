@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalmMind | Binaural Beat Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237668f8'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>CalmMind</h1>
+            <p>Advanced Binaural Beat Generator</p>
+        </header>
+        
+        <section id="questionnaire" class="glass-section">
+            <h2>How are you feeling?</h2>
+            <form id="userInputForm">
+                <div class="form-group">
+                    <label for="stressLevel">Stress Level (1-10):</label>
+                    <div class="range-container">
+                        <input type="range" id="stressLevel" name="stressLevel" min="1" max="10" value="5">
+                        <span id="stressValue" class="range-value">5</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="duration">Duration (minutes):</label>
+                    <select id="duration" name="duration">
+                        <option value="5">5 minutes</option>
+                        <option value="10" selected>10 minutes</option>
+                        <option value="20">20 minutes</option>
+                        <option value="30">30 minutes</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ambientSound">Ambient Sound:</label>
+                    <select id="ambientSound" name="ambientSound">
+                        <option value="none">None</option>
+                        <option value="rain">Rain</option>
+                        <option value="ocean">Ocean Waves</option>
+                        <option value="forest">Forest</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="soundType">Sound Type (Brain Function):</label>
+                    <select id="soundType">
+                        <option value="binaural" selected>Binaural Beats (Relaxation)</option>
+                        <option value="pinkNoise">Pink Noise (Deep Sleep & Memory)</option>
+                        <option value="isochronic">Isochronic Tones (Focus & Meditation)</option>
+                        <option value="nature">Nature Sounds (Stress Relief)</option>
+                        <option value="solfeggio">Solfeggio Frequencies (Healing & Harmony)</option>
+                        <option value="monaural">Monaural Beats (Balance & Clarity)</option>
+                        <option value="gamma">Gamma Wave Entrainment (Cognitive Function)</option>
+                        <option value="hrv">HRV Coherence (Heart-Brain Alignment)</option>
+                        <option value="soundBath">Sound Bath (Deep Meditation & Healing)</option>
+                        <option value="psychoacoustic">Psychoacoustic Harmony (Emotional Balance)</option>
+                    </select>
+                </div>
+                
+                <button type="button" id="generateButton" class="glass-button">Generate Track</button>
+            </form>
+        </section>
+        
+        <section id="playerSection" class="glass-section hidden">
+            <h2>Your Personalized Track</h2>
+            <div class="player-controls">
+                <button id="playBtn" class="glass-button">Play</button>
+                <button id="stopButton" class="glass-button stop-button" disabled>Stop</button>
+                <div class="volume-control">
+                    <label for="volume">Volume:</label>
+                    <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
+                </div>
+            </div>
+            <canvas id="visualizer"></canvas>
+            <p id="trackInfo" class="track-info"></p>
+        </section>
+        
+        <section id="info" class="glass-section">
+            <h2>About CalmMind Sound Technologies</h2>
+            <p>CalmMind uses cutting-edge audio technologies to promote relaxation, focus, and mental wellbeing:</p>
+            <ul class="sound-info-list">
+                <li><strong>Binaural Beats:</strong> Created by playing two slightly different frequencies in each ear, binaural beats can influence brainwave activity to promote relaxation. Best experienced with headphones.</li>
+                <li><strong>Solfeggio Frequencies:</strong> Ancient musical tones with healing properties that are said to affect different aspects of consciousness and wellbeing.</li>
+                <li><strong>Monaural Beats:</strong> Similar to binaural beats but with modulation happening before reaching the ears, making them effective even without headphones.</li>
+                <li><strong>Gamma Waves:</strong> Higher frequency brainwave patterns associated with peak cognitive performance, learning, and memory.</li>
+                <li><strong>HRV Coherence:</strong> Sound patterns synchronized with optimal breathing rates to promote heart-brain coherence and reduce stress.</li>
+                <li><strong>Sound Bath:</strong> A virtual recreation of traditional Tibetan singing bowls and gongs, creating an immersive healing environment with rich harmonics and spatial audio positioning.</li>
+                <li><strong>Psychoacoustic Harmony:</strong> Advanced harmonic progressions and spatial audio designed to directly influence emotional state through carefully crafted timbres and resonances.</li>
+            </ul>
+            <p class="tip"><strong>Tip:</strong> For most sound types, headphones are recommended for the best experience. The Sound Bath and Psychoacoustic features are especially immersive with good stereo headphones.</p>
+        </section>
+        
+        <footer>
+            <p>&copy; 2023 CalmMind - Advanced Audio for Mental Wellbeing</p>
+        </footer>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="audio.js"></script>
+    <script src="visualizer.js"></script>
+    <script src="app.js"></script>
+</body>
+</html> 
