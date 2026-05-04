@@ -1,24 +1,68 @@
-let audioContext;
-let masterGain;
+let audioContext = null;
+let masterGain = null;
 let binauralOsc1, binauralOsc2;
 let ambientOsc;
 let soundTypeNodes = [];
-let analyser;
+let analyser = null;
 const AMBIENT_VOLUME = 0.2;
+/** Track-level playing flag (must not collide with app.js `isPlaying` in shared global scope) */
+let audioEnginePlaying = false;
+
+/** Single path to speakers: masterGain -> analyser -> destination */
+function connectOutputChain() {
+    if (!audioContext || !masterGain) return;
+    if (!analyser) {
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.8;
+    }
+    try {
+        masterGain.disconnect();
+    } catch (e) {
+        /* ignore */
+    }
+    try {
+        analyser.disconnect();
+    } catch (e) {
+        /* ignore */
+    }
+    masterGain.connect(analyser);
+    analyser.connect(audioContext.destination);
+}
 
 // Initialize audio context
 function initAudio() {
     try {
+        // Don't recreate if it already exists
+        if (audioContext) {
+            console.log("Audio context already initialized, state:", audioContext.state);
+            
+            // Resume context if suspended
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    console.log("Audio context resumed:", audioContext.state);
+                });
+            }
+            
+            if (masterGain) window.masterGain = masterGain;
+            return true;
+        }
+        
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (!audioContext) {
+            console.error("Failed to create AudioContext");
+            return false;
+        }
+        
+        // Create master gain + analyser (single route to destination)
         masterGain = audioContext.createGain();
-        masterGain.connect(audioContext.destination);
         masterGain.gain.value = 0.5;
-        
-        // Create analyzer node
         analyser = audioContext.createAnalyser();
-        analyser.fftSize = 512; // Increased for better frequency resolution
-        masterGain.connect(analyser);
-        
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.8;
+        connectOutputChain();
+        window.masterGain = masterGain;
+
         console.log("Audio initialization complete. Context state:", audioContext.state);
         return true;
     } catch (error) {
@@ -29,16 +73,46 @@ function initAudio() {
 
 // Expose function to get the analyser
 window.getAnalyser = function() {
+    console.log("getAnalyser called - current state:", { 
+        audioContextExists: !!audioContext, 
+        analyserExists: !!analyser,
+        masterGainExists: !!masterGain
+    });
+    
+    if (!audioContext) {
+        console.log("Initializing audio in getAnalyser");
+        if (!initAudio()) {
+            return null;
+        }
+    }
+    
     if (!analyser && audioContext) {
         // Create if it doesn't exist yet
         console.log("Creating new analyzer as none exists");
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 512; 
-        masterGain.connect(analyser);
+        try {
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 512; 
+            analyser.smoothingTimeConstant = 0.8;
+            
+            if (masterGain) {
+                connectOutputChain();
+            } else {
+                console.error("Master gain not available for analyzer connection");
+                masterGain = audioContext.createGain();
+                masterGain.gain.value = 0.5;
+                connectOutputChain();
+                window.masterGain = masterGain;
+            }
+            
+            console.log("Successfully created new analyser with fftSize:", analyser.fftSize);
+        } catch (error) {
+            console.error("Error creating analyser:", error);
+            return null;
+        }
     }
     
     if (!analyser) {
-        console.error("Analyzer not available! Audio context may not be initialized.");
+        console.error("Analyzer not available after creation attempt");
         return null;
     }
     
@@ -46,42 +120,97 @@ window.getAnalyser = function() {
     return analyser;
 }
 
-// Generate track - main entry point called from app.js
-function generateTrack(stressLevel, duration, ambientSound, soundType) {
-    console.log('Generating track with settings:', { stressLevel, duration, ambientSound, soundType });
-    
-    // Initialize audio context if not already done
+// Expose functions to get audio context and master gain
+window.getAudioContext = function() {
+    if (!audioContext) {
+        initAudio();
+    }
+    return audioContext;
+};
+
+window.getMasterGain = function() {
+    if (!masterGain && audioContext) {
+        masterGain = audioContext.createGain();
+        masterGain.gain.value = 0.5;
+        connectOutputChain();
+        window.masterGain = masterGain;
+    }
+    return masterGain;
+};
+
+window.setVolume = function (value) {
+    if (!audioContext) initAudio();
+    if (masterGain) {
+        masterGain.gain.value = Math.max(0, Math.min(1, Number(value)));
+    }
+};
+
+// Expose initAudio function globally
+window.initAudio = initAudio;
+
+/**
+ * Main entry from UI: generate audio and wire visualizer.
+ * @param {string} [vizType] — from #visualizerType (particles | meshWave)
+ * @returns {boolean|Promise<boolean>}
+ */
+function playGeneratedTrack(stressLevel, duration, ambientSound, soundType, vizType) {
+    console.log('Generating track with settings:', { stressLevel, duration, ambientSound, soundType, vizType });
+
     if (!audioContext) {
         try {
-            initAudio();
-            console.log("Audio context initialized successfully:", audioContext.state);
+            if (!initAudio()) {
+                console.error("Failed to initialize audio");
+                return false;
+            }
         } catch (error) {
             console.error("Failed to initialize audio context:", error);
             return false;
         }
     }
-    
-    // Make sure audio context is running
-    if (audioContext.state === 'suspended') {
+
+    function generateAndStartTrack() {
         try {
-            audioContext.resume();
-            console.log("Audio context resumed from suspended state");
+            generatePersonalizedTrack(stressLevel, duration, ambientSound, soundType);
+
+            if (window.setupVisualizer && analyser) {
+                const canvas = document.getElementById('visualizerCanvas');
+                const inferred =
+                    soundType.includes('binaural') ? 'particles' :
+                    soundType.includes('isochronic') ? 'meshWave' : 'particles';
+                const resolvedViz = vizType === 'meshWave' || vizType === 'particles' ? vizType : inferred;
+
+                window.setupVisualizer(canvas, analyser, resolvedViz);
+                console.log("Visualizer set up with analyzer and type:", resolvedViz);
+            } else {
+                console.warn("Visualizer setup function not available or analyzer missing");
+            }
+
+            setPlayingState(true);
+
+            return true;
         } catch (error) {
-            console.error("Failed to resume audio context:", error);
+            console.error("Error generating track:", error);
+            alert("There was an error generating the track. Please try again.");
             return false;
         }
     }
-    
-    // Generate the actual audio based on selected type
-    try {
-        generatePersonalizedTrack(stressLevel, duration, ambientSound, soundType);
-        return true; // Indicate success
-    } catch (error) {
-        console.error("Error generating track:", error);
-        alert("There was an error generating the track. Please try again.");
-        return false;
+
+    if (audioContext.state === 'suspended') {
+        return audioContext.resume()
+            .then(() => {
+                console.log("Audio context resumed from suspended state");
+                return generateAndStartTrack();
+            })
+            .catch((error) => {
+                console.error("Failed to resume audio context:", error);
+                return false;
+            });
     }
+
+    return generateAndStartTrack();
 }
+
+window.playGeneratedTrack = playGeneratedTrack;
 
 // Generate personalized track based on user input
 function generatePersonalizedTrack(stressLevel, duration, ambientSound, soundType) {
@@ -95,6 +224,21 @@ function generatePersonalizedTrack(stressLevel, duration, ambientSound, soundTyp
     
     console.log("Generating track with soundType:", soundType);
     
+    if (!analyser && audioContext) {
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.8;
+    }
+    if (masterGain && analyser && audioContext) {
+        connectOutputChain();
+    }
+    
+    // Convert duration from minutes to seconds for the rest of the system
+    let durationMinutes = Number(duration);
+    if (!Number.isFinite(durationMinutes)) durationMinutes = 10;
+    durationMinutes = Math.max(1, Math.min(60, durationMinutes));
+    const durationSeconds = durationMinutes * 60;
+    
     // Handle both old and new sound type values with mapping
     if (soundType === 'binauralRelax' || soundType === 'binauralFocus' || 
         soundType === 'binauralSleep' || soundType === 'binaural') {
@@ -105,7 +249,7 @@ function generatePersonalizedTrack(stressLevel, duration, ambientSound, soundTyp
         } else if (soundType === 'binauralSleep') {
             adjustedStressLevel = Math.max(stressLevel - 2, 1); // Lower frequency for sleep
         }
-        generateBinauralBeats(adjustedStressLevel, duration);
+        generateBinauralBeats(adjustedStressLevel, durationSeconds);
     } else if (soundType === 'isochronicEnergy' || soundType === 'isochronicMeditate' || 
                soundType === 'isochronic') {
         // For new specific isochronic types, adjust the stress level based on intent
@@ -115,38 +259,40 @@ function generatePersonalizedTrack(stressLevel, duration, ambientSound, soundTyp
         } else if (soundType === 'isochronicMeditate') {
             adjustedStressLevel = Math.max(stressLevel - 2, 1); // Lower pulse for meditation
         }
-        generateIsochronicTones(adjustedStressLevel, duration);
+        generateIsochronicTones(adjustedStressLevel, durationSeconds);
     } else if (soundType === 'pinkNoise') {
-        generatePinkNoise(duration);
+        generatePinkNoise(durationSeconds);
     } else if (soundType === 'nature') {
-        generateNatureEnhancedSound(ambientSound, duration);
+        generateNatureEnhancedSound(ambientSound, durationSeconds);
     } else if (soundType === 'solfeggio') {
-        generateSolfeggioFrequencies(stressLevel, duration);
+        generateSolfeggioFrequencies(stressLevel, durationSeconds);
     } else if (soundType === 'monaural') {
-        generateMonauralBeats(stressLevel, duration);
+        generateMonauralBeats(stressLevel, durationSeconds);
     } else if (soundType === 'gamma') {
-        generateGammaWaves(duration);
+        generateGammaWaves(durationSeconds);
     } else if (soundType === 'hrv') {
-        generateHRVCoherence(duration);
+        generateHRVCoherence(durationSeconds);
     } else if (soundType === 'soundBath') {
-        generateSoundBath(duration);
+        generateSoundBath(durationSeconds);
     } else if (soundType === 'psychoacoustic') {
-        generatePsychoacousticMood(stressLevel, duration);
+        generatePsychoacousticMood(stressLevel, durationSeconds);
     } else if (soundType === 'neuroacoustic') {
-        generateNeuroacoustic(stressLevel, duration);
+        generateNeuroacoustic(stressLevel, durationSeconds);
     } else {
         console.error("Unknown sound type:", soundType);
         // Default to binaural beats as a fallback
-        generateBinauralBeats(stressLevel, duration);
+        generateBinauralBeats(stressLevel, durationSeconds);
     }
     
     if (ambientSound !== 'none' && soundType !== 'nature' && soundType !== 'soundBath') {
-        generateAmbientSound(ambientSound, duration);
+        generateAmbientSound(ambientSound, durationSeconds);
     }
     
-    // Set duration
-    setTimeout(stopCurrentTrack, duration * 60 * 1000);
-    setPlayingState(true);
+    // Set duration timeout
+    if (durationSeconds > 0) {
+        console.log(`Sound scheduled to stop after ${durationSeconds} seconds`);
+        setTimeout(stopCurrentTrack, durationSeconds * 1000);
+    }
 }
 
 // Toggle spatial audio indicator visibility
@@ -162,8 +308,17 @@ function toggleSpatialIndicator(show) {
 }
 
 // Generate binaural beats based on stress level
-function generateBinauralBeats(stressLevel, duration = 10) {
-    console.log('Generating binaural beats with stress level:', stressLevel, 'and duration:', duration, 'minutes');
+/** @param {number} trackDurationSec total playback length in seconds (UI minutes already converted by caller) */
+function generateBinauralBeats(stressLevel, trackDurationSec = 600) {
+    console.log('Generating binaural beats with stress level:', stressLevel, 'and duration:', trackDurationSec, 'seconds');
+    
+    // Ensure audioContext is initialized
+    if (!audioContext) {
+        if (!initAudio()) {
+            console.error("Failed to initialize audio context in generateBinauralBeats");
+            return false;
+        }
+    }
     
     // Show spatial indicator for binaural beats as they use left/right channels
     toggleSpatialIndicator(true);
@@ -173,100 +328,105 @@ function generateBinauralBeats(stressLevel, duration = 10) {
     const baseFreq = stressLevel <= 3 ? 200 : stressLevel <= 6 ? 180 : 160;
     const beatFreq = stressLevel <= 3 ? 8 : stressLevel <= 6 ? 6 : 4;
     
-    binauralOsc1 = audioContext.createOscillator();
-    binauralOsc2 = audioContext.createOscillator();
-    
-    binauralOsc1.type = 'sine';
-    binauralOsc2.type = 'sine';
-    
-    binauralOsc1.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
-    binauralOsc2.frequency.setValueAtTime(baseFreq + beatFreq, audioContext.currentTime);
-    
-    // Define variables for use throughout the function
-    let leftPanner, rightPanner, merger;
-    
-    // Use StereoPannerNode if available, otherwise fallback to a different approach
-    if (audioContext.createStereoPanner) {
-        console.log('Using StereoPanner for binaural beats');
-        leftPanner = audioContext.createStereoPanner();
-        rightPanner = audioContext.createStereoPanner();
+    try {
+        binauralOsc1 = audioContext.createOscillator();
+        binauralOsc2 = audioContext.createOscillator();
         
-        leftPanner.pan.value = -1; // Full left
-        rightPanner.pan.value = 1; // Full right
+        binauralOsc1.type = 'sine';
+        binauralOsc2.type = 'sine';
         
-        binauralOsc1.connect(leftPanner);
-        binauralOsc2.connect(rightPanner);
+        binauralOsc1.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
+        binauralOsc2.frequency.setValueAtTime(baseFreq + beatFreq, audioContext.currentTime);
         
-        // Don't connect to masterGain yet, we'll connect through volumeBoost
-        // leftPanner.connect(masterGain); 
-        // rightPanner.connect(masterGain);
+        // Define variables for use throughout the function
+        let leftPanner, rightPanner, merger;
         
-        soundTypeNodes.push(binauralOsc1, binauralOsc2, leftPanner, rightPanner);
-    } else {
-        // Fallback for browsers without StereoPanner
-        console.log('Using ChannelSplitter fallback for binaural beats');
-        merger = audioContext.createChannelMerger(2);
-        const leftGain = audioContext.createGain();
-        const rightGain = audioContext.createGain();
+        // Use StereoPannerNode if available, otherwise fallback to a different approach
+        if (audioContext.createStereoPanner) {
+            console.log('Using StereoPanner for binaural beats');
+            leftPanner = audioContext.createStereoPanner();
+            rightPanner = audioContext.createStereoPanner();
+            
+            leftPanner.pan.value = -1; // Full left
+            rightPanner.pan.value = 1; // Full right
+            
+            binauralOsc1.connect(leftPanner);
+            binauralOsc2.connect(rightPanner);
+            
+            // Don't connect to masterGain yet, we'll connect through volumeBoost
+            // leftPanner.connect(masterGain); 
+            // rightPanner.connect(masterGain);
+            
+            soundTypeNodes.push(binauralOsc1, binauralOsc2, leftPanner, rightPanner);
+        } else {
+            // Fallback for browsers without StereoPanner
+            console.log('Using ChannelSplitter fallback for binaural beats');
+            merger = audioContext.createChannelMerger(2);
+            const leftGain = audioContext.createGain();
+            const rightGain = audioContext.createGain();
+            
+            leftGain.gain.value = 1;
+            rightGain.gain.value = 1;
+            
+            binauralOsc1.connect(leftGain);
+            binauralOsc2.connect(rightGain);
+            
+            // Connect left oscillator to left channel, right oscillator to right channel
+            leftGain.connect(merger, 0, 0);  // Connect to left channel
+            rightGain.connect(merger, 0, 1); // Connect to right channel
+            
+            merger.connect(masterGain);
+            
+            soundTypeNodes.push(binauralOsc1, binauralOsc2, leftGain, rightGain, merger);
+        }
         
-        leftGain.gain.value = 1;
-        rightGain.gain.value = 1;
+        // Fix volume boost implementation to avoid feedback loop
+        const volumeBoost = audioContext.createGain();
+        volumeBoost.gain.value = 1.5; // Boost volume for binaural beats
         
-        binauralOsc1.connect(leftGain);
-        binauralOsc2.connect(rightGain);
+        // Disconnect oscillators from their current connections
+        if (audioContext.createStereoPanner) {
+            leftPanner.disconnect();
+            rightPanner.disconnect();
+            
+            // Connect to volume boost instead
+            leftPanner.connect(volumeBoost);
+            rightPanner.connect(volumeBoost);
+        } else {
+            merger.disconnect();
+            merger.connect(volumeBoost);
+        }
         
-        // Connect left oscillator to left channel, right oscillator to right channel
-        leftGain.connect(merger, 0, 0);  // Connect to left channel
-        rightGain.connect(merger, 0, 1); // Connect to right channel
+        // Connect boost directly to master gain
+        volumeBoost.connect(masterGain);
+        soundTypeNodes.push(volumeBoost);
         
-        merger.connect(masterGain);
+        binauralOsc1.start();
+        binauralOsc2.start();
         
-        soundTypeNodes.push(binauralOsc1, binauralOsc2, leftGain, rightGain, merger);
+        // Ensure audio context is running
+        if (audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+                console.log('Audio context resumed for binaural beats');
+            }).catch(err => {
+                console.error('Failed to resume audio context for binaural beats:', err);
+            });
+        }
+        
+        const durationInSeconds = Math.max(0, trackDurationSec);
+        binauralOsc1.stop(audioContext.currentTime + durationInSeconds);
+        binauralOsc2.stop(audioContext.currentTime + durationInSeconds);
+        console.log('Binaural beats scheduled to stop after', durationInSeconds, 'seconds');
+    } catch (error) {
+        console.error("Error generating binaural beats:", error);
+        return false;
     }
-    
-    // Fix volume boost implementation to avoid feedback loop
-    const volumeBoost = audioContext.createGain();
-    volumeBoost.gain.value = 1.5; // Boost volume for binaural beats
-    
-    // Disconnect oscillators from their current connections
-    if (audioContext.createStereoPanner) {
-        leftPanner.disconnect();
-        rightPanner.disconnect();
-        
-        // Connect to volume boost instead
-        leftPanner.connect(volumeBoost);
-        rightPanner.connect(volumeBoost);
-    } else {
-        merger.disconnect();
-        merger.connect(volumeBoost);
-    }
-    
-    // Connect boost directly to master gain
-    volumeBoost.connect(masterGain);
-    soundTypeNodes.push(volumeBoost);
-    
-    binauralOsc1.start();
-    binauralOsc2.start();
-    
-    // Ensure audio context is running
-    if (audioContext.state === 'suspended') {
-        audioContext.resume().then(() => {
-            console.log('Audio context resumed for binaural beats');
-        }).catch(err => {
-            console.error('Failed to resume audio context for binaural beats:', err);
-        });
-    }
-    
-    // Stop after the specified duration (converted from minutes to seconds)
-    const durationInSeconds = duration * 60;
-    binauralOsc1.stop(audioContext.currentTime + durationInSeconds);
-    binauralOsc2.stop(audioContext.currentTime + durationInSeconds);
-    console.log('Binaural beats scheduled to stop after', durationInSeconds, 'seconds');
 }
 
 // Generate pink noise for deep sleep and memory
-function generatePinkNoise(duration = 10) {
-    console.log('Generating pink noise with duration:', duration, 'minutes');
+/** @param {number} trackDurationSec playback length in seconds */
+function generatePinkNoise(trackDurationSec = 600) {
+    console.log('Generating pink noise with duration:', trackDurationSec, 'seconds');
     const bufferSize = 2 * audioContext.sampleRate;
     const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
     const data = noiseBuffer.getChannelData(0);
@@ -291,8 +451,7 @@ function generatePinkNoise(duration = 10) {
     noiseSource.connect(masterGain);
     noiseSource.start();
     
-    // Stop after the specified duration
-    const durationInSeconds = duration * 60;
+    const durationInSeconds = Math.max(0, trackDurationSec);
     noiseSource.stop(audioContext.currentTime + durationInSeconds);
     console.log('Pink noise scheduled to stop after', durationInSeconds, 'seconds');
     
@@ -300,72 +459,63 @@ function generatePinkNoise(duration = 10) {
 }
 
 // Generate isochronic tones for focus and meditation
-function generateIsochronicTones(stressLevel, duration = 10) {
-    console.log('Generating isochronic tones with stress level:', stressLevel, 'and duration:', duration, 'minutes');
-    const baseFreq = stressLevel <= 3 ? 10 : stressLevel <= 6 ? 8 : 6; // Beta/Alpha range for focus/meditation
-    const pulseFreq = stressLevel <= 3 ? 10 : stressLevel <= 6 ? 8 : 5;
-    
+/** Audible carrier + amplitude pulsing at entrainment rate; @param {number} trackDurationSec seconds */
+function generateIsochronicTones(stressLevel, trackDurationSec = 600) {
+    const pulseFreq = stressLevel <= 3 ? 14 : stressLevel <= 6 ? 10 : 6;
+    const carrierHz = 180 + stressLevel * 12;
+
+    console.log('Generating isochronic tones:', { stressLevel, pulseHz: pulseFreq, carrierHz, trackDurationSec });
+
     const osc = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
-    
-    // Ensure gain node is connected
+    osc.frequency.setValueAtTime(carrierHz, audioContext.currentTime);
+
+    const gainNode = audioContext.createGain();
+    const isoBoost = audioContext.createGain();
+    isoBoost.gain.value = 1.15;
+
     osc.connect(gainNode);
-    gainNode.connect(masterGain);
-    
-    // Start the oscillator immediately
-    osc.start();
-    
-    // Use a more direct and consistent approach for pulsing
+    gainNode.connect(isoBoost);
+    isoBoost.connect(masterGain);
+
+    const halfPeriodMs = (1000 / pulseFreq) / 2;
+    const rampSec = Math.min(0.09, halfPeriodMs / 1000 * 0.85);
+
     let isOn = true;
-    const pulseInterval = 1000 / pulseFreq; // Time in ms for each pulse cycle
-    
-    // More pronounced gain contrast for better audibility
     const pulseTimer = setInterval(() => {
         if (!audioContext) {
             clearInterval(pulseTimer);
             return;
         }
-        
+        const t = audioContext.currentTime;
         if (isOn) {
-            gainNode.gain.setValueAtTime(0.8, audioContext.currentTime); // Higher "on" volume
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1); // Faster fade
+            gainNode.gain.setValueAtTime(0.38, t);
+            gainNode.gain.linearRampToValueAtTime(0.07, t + rampSec);
         } else {
-            gainNode.gain.setValueAtTime(0.001, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.8, audioContext.currentTime + 0.1); // Faster rise
+            gainNode.gain.setValueAtTime(0.07, t);
+            gainNode.gain.linearRampToValueAtTime(0.38, t + rampSec);
         }
         isOn = !isOn;
-    }, pulseInterval / 2);
-    
-    // Store timer reference for cleanup
-    soundTypeNodes.push({
-        disconnect: () => clearInterval(pulseTimer)
-    });
-    
-    // Stop after the specified duration
-    const durationInSeconds = duration * 60;
+    }, halfPeriodMs);
+
+    gainNode.gain.setValueAtTime(0.35, audioContext.currentTime);
+    osc.start();
+
+    const durationInSeconds = Math.max(0, trackDurationSec);
     osc.stop(audioContext.currentTime + durationInSeconds);
     setTimeout(() => clearInterval(pulseTimer), durationInSeconds * 1000);
+
+    soundTypeNodes.push({ disconnect: () => clearInterval(pulseTimer) });
+    soundTypeNodes.push(osc, gainNode, isoBoost);
     console.log('Isochronic tones scheduled to stop after', durationInSeconds, 'seconds');
-    
-    soundTypeNodes.push(osc, gainNode);
-    
-    // Add a volume boost specific to isochronic tones
-    const isoBoost = audioContext.createGain();
-    isoBoost.gain.value = 1.2;
-    masterGain.connect(isoBoost);
-    isoBoost.connect(audioContext.destination);
-    soundTypeNodes.push(isoBoost);
 }
 
 // Enhance ambient sound for nature selection
-function generateNatureEnhancedSound(ambientSound, duration = 10) {
+function generateNatureEnhancedSound(ambientSound, trackDurationSec = 600) {
     // Default to forest sounds if none selected
     const soundType = ambientSound === 'none' ? 'forest' : ambientSound;
     
-    console.log('Generating enhanced nature sound:', soundType, 'with duration:', duration, 'minutes');
+    console.log('Generating enhanced nature sound:', soundType, 'with duration:', trackDurationSec, 'seconds');
     const freqMap = {
         'rain': 200,
         'ocean': 120,
@@ -387,53 +537,51 @@ function generateNatureEnhancedSound(ambientSound, duration = 10) {
     secondaryOsc.type = 'sine';
     secondaryOsc.frequency.setValueAtTime(baseFreq * 1.5, audioContext.currentTime);
     
-    // Random gentle modulation of frequency to simulate nature
-    setInterval(() => {
+    const modInterval = setInterval(() => {
         if (!audioContext || !ambientOsc) return;
-        const randomVariation = (Math.random() * 10) - 5; // -5 to +5 Hz
+        const randomVariation = (Math.random() * 10) - 5;
         ambientOsc.frequency.setTargetAtTime(
-            baseFreq + randomVariation, 
-            audioContext.currentTime, 
+            baseFreq + randomVariation,
+            audioContext.currentTime,
             0.5
         );
         secondaryOsc.frequency.setTargetAtTime(
-            baseFreq * 1.5 + randomVariation, 
-            audioContext.currentTime, 
+            baseFreq * 1.5 + randomVariation,
+            audioContext.currentTime,
             0.5
         );
-    }, 1000); // Update every second
-    
+    }, 1000);
+
     gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
     secondaryGain.gain.setValueAtTime(0.2, audioContext.currentTime);
-    
+
+    const natureBus = audioContext.createGain();
+    natureBus.gain.value = 1.3;
     ambientOsc.connect(gainNode);
     secondaryOsc.connect(secondaryGain);
-    gainNode.connect(masterGain);
-    secondaryGain.connect(masterGain);
-    
+    gainNode.connect(natureBus);
+    secondaryGain.connect(natureBus);
+    natureBus.connect(masterGain);
+
     ambientOsc.start();
     secondaryOsc.start();
-    
-    // Volume boost for nature sounds
-    const natureBoost = audioContext.createGain();
-    natureBoost.gain.value = 1.3;
-    masterGain.connect(natureBoost);
-    natureBoost.connect(audioContext.destination);
-    
-    // Stop after the specified duration
-    const durationInSeconds = duration * 60;
+
+    const durationInSeconds = Math.max(0, trackDurationSec);
     ambientOsc.stop(audioContext.currentTime + durationInSeconds);
     secondaryOsc.stop(audioContext.currentTime + durationInSeconds);
     console.log('Nature sound scheduled to stop after', durationInSeconds, 'seconds');
-    
-    soundTypeNodes.push(ambientOsc, secondaryOsc, gainNode, secondaryGain, natureBoost);
+
+    soundTypeNodes.push({
+        disconnect: () => clearInterval(modInterval)
+    });
+    soundTypeNodes.push(ambientOsc, secondaryOsc, gainNode, secondaryGain, natureBus);
 }
 
 // Generate ambient background sound
-function generateAmbientSound(type, duration = 10) {
+function generateAmbientSound(type, trackDurationSec = 600) {
     if (type === 'none') return;
     
-    console.log('Generating ambient sound:', type, 'with duration:', duration, 'minutes');
+    console.log('Generating ambient sound:', type, 'with duration:', trackDurationSec, 'seconds');
     const freqMap = {
         'rain': 200,
         'ocean': 120,
@@ -454,7 +602,7 @@ function generateAmbientSound(type, duration = 10) {
     ambientOsc.start();
     
     // Stop after the specified duration
-    const durationInSeconds = duration * 60;
+    const durationInSeconds = Math.max(0, trackDurationSec);
     ambientOsc.stop(audioContext.currentTime + durationInSeconds);
     console.log('Ambient sound scheduled to stop after', durationInSeconds, 'seconds');
     
@@ -463,79 +611,75 @@ function generateAmbientSound(type, duration = 10) {
 
 // Stop current track
 function stopCurrentTrack() {
-    console.log('Stopping current track');
+    console.log("Stopping current track");
     
-    // Hide spatial indicator when stopping
-    toggleSpatialIndicator(false);
+    if (!audioContext) {
+        console.warn("No audio context to stop");
+        return;
+    }
     
-    if (binauralOsc1) {
-        try {
+    try {
+        // Stop oscillators for binaural beats
+        if (binauralOsc1) {
             binauralOsc1.stop();
             binauralOsc1.disconnect();
-        } catch (e) {
-            console.log('Error stopping binauralOsc1', e);
+            binauralOsc1 = null;
         }
-        binauralOsc1 = null;
-    }
-    
-    if (binauralOsc2) {
-        try {
+        
+        if (binauralOsc2) {
             binauralOsc2.stop();
             binauralOsc2.disconnect();
-        } catch (e) {
-            console.log('Error stopping binauralOsc2', e);
+            binauralOsc2 = null;
         }
-        binauralOsc2 = null;
-    }
-    
-    if (ambientOsc) {
-        try {
+        
+        // Stop ambient oscillator
+        if (ambientOsc) {
             ambientOsc.stop();
             ambientOsc.disconnect();
-        } catch (e) {
-            console.log('Error stopping ambientOsc', e);
+            ambientOsc = null;
         }
-        ambientOsc = null;
-    }
-    
-    soundTypeNodes.forEach(node => {
-        if (node) {
-            try {
-                if (node.stop) node.stop();
-                node.disconnect();
-            } catch (e) {
-                console.log('Error stopping node', e);
+        
+        // Stop all sound type nodes (for special sound types)
+        soundTypeNodes.forEach(node => {
+            if (node && node.stop) {
+                try {
+                    node.stop();
+                } catch (error) {
+                    console.warn("Error stopping node:", error);
+                }
             }
+            if (node && node.disconnect) {
+                try {
+                    node.disconnect();
+                } catch (error) {
+                    console.warn("Error disconnecting node:", error);
+                }
+            }
+        });
+        
+        // Clear sound type nodes array
+        soundTypeNodes = [];
+        
+        toggleSpatialIndicator(false);
+
+        if (window.setPlayingState) {
+            window.setPlayingState(false);
         }
-    });
-    
-    // Reset master gain connection
-    if (masterGain) {
-        try {
-            masterGain.disconnect();
-            masterGain.connect(audioContext.destination);
-        } catch (e) {
-            console.log('Error resetting masterGain', e);
-        }
+    } catch (error) {
+        console.error("Error stopping track:", error);
     }
-    
-    soundTypeNodes = [];
-    setPlayingState(false);
 }
 
-// Adjust volume
+// Expose stopCurrentTrack function globally
+window.stopCurrentTrack = stopCurrentTrack;
+
+// Adjust volume (legacy name; prefer window.setVolume)
 function adjustVolume(value) {
-    masterGain.gain.value = value;
-}
-
-// Get audio context for visualizer connection
-function getAudioContext() {
-    return audioContext;
-}
-
-// Get master gain for volume control and analyser connection
-function getMasterGain() {
-    return masterGain;
+    if (typeof window.setVolume === 'function') {
+        window.setVolume(value);
+    } else if (masterGain) {
+        masterGain.gain.value = value;
+    }
 }
 
 // Stop audio
@@ -547,8 +691,8 @@ function stopAudio() {
 }
 
 // Generate Solfeggio frequencies based on stress level
-function generateSolfeggioFrequencies(stressLevel, duration = 10) {
-    console.log('Generating Solfeggio frequencies with stress level:', stressLevel, 'and duration:', duration, 'minutes');
+function generateSolfeggioFrequencies(stressLevel, trackDurationSec = 600) {
+    console.log('Generating Solfeggio frequencies with stress level:', stressLevel, 'and duration:', trackDurationSec, 'seconds');
     
     // Solfeggio frequencies and their associated effects
     const solfeggioFreqs = {
@@ -628,7 +772,7 @@ function generateSolfeggioFrequencies(stressLevel, duration = 10) {
     }
     
     // Stop after the specified duration
-    const durationInSeconds = duration * 60;
+    const durationInSeconds = Math.max(0, trackDurationSec);
     solfOsc.stop(audioContext.currentTime + durationInSeconds);
     overtone1.stop(audioContext.currentTime + durationInSeconds);
     overtone2.stop(audioContext.currentTime + durationInSeconds);
@@ -639,8 +783,8 @@ function generateSolfeggioFrequencies(stressLevel, duration = 10) {
 }
 
 // Generate monaural beats based on stress level
-function generateMonauralBeats(stressLevel, duration = 10) {
-    console.log('Generating monaural beats with stress level:', stressLevel, 'and duration:', duration, 'minutes');
+function generateMonauralBeats(stressLevel, trackDurationSec = 600) {
+    console.log('Generating monaural beats with stress level:', stressLevel, 'and duration:', trackDurationSec, 'seconds');
     
     // Determine frequencies based on stress level (similar to binaural but with a single carrier)
     const baseFreq = stressLevel <= 3 ? 200 : stressLevel <= 6 ? 160 : 120;
@@ -698,7 +842,7 @@ function generateMonauralBeats(stressLevel, duration = 10) {
     }
     
     // Stop after the specified duration
-    const durationInSeconds = duration * 60;
+    const durationInSeconds = Math.max(0, trackDurationSec);
     carrier.stop(audioContext.currentTime + durationInSeconds);
     lfo.stop(audioContext.currentTime + durationInSeconds);
     constantSource.stop(audioContext.currentTime + durationInSeconds);
@@ -709,8 +853,8 @@ function generateMonauralBeats(stressLevel, duration = 10) {
 }
 
 // Generate gamma waves for cognitive enhancement
-function generateGammaWaves(duration = 10) {
-    console.log('Generating gamma waves with duration:', duration, 'minutes');
+function generateGammaWaves(trackDurationSec = 600) {
+    console.log('Generating gamma waves with duration:', trackDurationSec, 'seconds');
     
     // Gamma frequency range (30-100 Hz)
     const gammaFreq = 40; // 40 Hz is associated with cognitive processing
@@ -754,7 +898,7 @@ function generateGammaWaves(duration = 10) {
     }
     
     // Stop after the specified duration
-    const durationInSeconds = duration * 60;
+    const durationInSeconds = Math.max(0, trackDurationSec);
     gammaOsc.stop(audioContext.currentTime + durationInSeconds);
     carrierOsc.stop(audioContext.currentTime + durationInSeconds);
     
@@ -764,8 +908,8 @@ function generateGammaWaves(duration = 10) {
 }
 
 // Generate HRV coherence patterns for heart-brain synchronization
-function generateHRVCoherence(duration = 10) {
-    console.log('Generating HRV coherence pattern with duration:', duration, 'minutes');
+function generateHRVCoherence(trackDurationSec = 600) {
+    console.log('Generating HRV coherence pattern with duration:', trackDurationSec, 'seconds');
     
     // HRV coherence occurs around 0.1 Hz (6 breaths per minute)
     const breathingRate = 0.1; // Hz (one breath cycle every 10 seconds)
@@ -851,7 +995,7 @@ function generateHRVCoherence(duration = 10) {
     }
     
     // Stop after the specified duration
-    const durationInSeconds = duration * 60;
+    const durationInSeconds = Math.max(0, trackDurationSec);
     breathingLFO.stop(audioContext.currentTime + durationInSeconds);
     carrierOsc.stop(audioContext.currentTime + durationInSeconds);
     pulseOsc.stop(audioContext.currentTime + durationInSeconds);
@@ -863,8 +1007,8 @@ function generateHRVCoherence(duration = 10) {
 }
 
 // Generate virtual sound bath experience
-function generateSoundBath(duration = 10) {
-    console.log('Generating sound bath with duration:', duration, 'minutes');
+function generateSoundBath(trackDurationSec = 600) {
+    console.log('Generating sound bath with duration:', trackDurationSec, 'seconds');
     
     // Show spatial indicator for sound bath as it uses spatial positioning
     toggleSpatialIndicator(true);
@@ -1030,7 +1174,7 @@ function generateSoundBath(duration = 10) {
     soundTypeNodes.push(gong.fundamental, gong.gain, gong.panner);
     
     // Stop after the specified duration
-    const durationInSeconds = duration * 60;
+    const durationInSeconds = Math.max(0, trackDurationSec);
     setTimeout(() => {
         bowls.forEach(bowl => {
             const now = audioContext.currentTime;
@@ -1046,8 +1190,8 @@ function generateSoundBath(duration = 10) {
 }
 
 // Generate psychoacoustic mood enhancement
-function generatePsychoacousticMood(stressLevel, duration = 10) {
-    console.log('Generating psychoacoustic mood enhancement with stress level:', stressLevel, 'and duration:', duration, 'minutes');
+function generatePsychoacousticMood(stressLevel, trackDurationSec = 600) {
+    console.log('Generating psychoacoustic mood enhancement with stress level:', stressLevel, 'and duration:', trackDurationSec, 'seconds');
     
     // Show spatial indicator for psychoacoustic mood as it uses panning
     toggleSpatialIndicator(true);
@@ -1055,28 +1199,34 @@ function generatePsychoacousticMood(stressLevel, duration = 10) {
     // Harmonic series based on mood
     const fundamentalFreq = stressLevel <= 3 ? 432 : stressLevel <= 6 ? 396 : 528; // Different base frequencies for different moods
     const harmonics = [1, 1.5, 2, 2.5, 3, 4]; // Harmonic series for rich timbre
-    
+
+    const subMix = audioContext.createGain();
+    subMix.gain.value = 1;
+
     // Create oscillators for harmonic progression
-    const oscillators = harmonics.map(harmonic => {
+    const oscillators = harmonics.map((harmonic) => {
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         const panner = audioContext.createStereoPanner();
-        
+
         osc.type = 'sine';
         osc.frequency.setValueAtTime(fundamentalFreq * harmonic, audioContext.currentTime);
-        
-        // Set initial gains based on harmonic number (higher harmonics quieter)
+
         gain.gain.setValueAtTime(1 / harmonic, audioContext.currentTime);
-        
-        // Create spatial position
+
         panner.pan.setValueAtTime((harmonic % 2 === 0 ? 0.5 : -0.5), audioContext.currentTime);
-        
+
         osc.connect(gain);
         gain.connect(panner);
-        panner.connect(masterGain);
-        
+        panner.connect(subMix);
+
         return { osc, gain, panner };
     });
+
+    const dryGain = audioContext.createGain();
+    dryGain.gain.value = 0.9;
+    subMix.connect(dryGain);
+    dryGain.connect(masterGain);
     
     // Start all oscillators
     oscillators.forEach(({ osc }) => osc.start());
@@ -1149,17 +1299,16 @@ function generatePsychoacousticMood(stressLevel, duration = 10) {
     
     convolver.buffer = reverbBuffer;
     const reverbGain = audioContext.createGain();
-    reverbGain.gain.setValueAtTime(0.3, audioContext.currentTime);
-    
-    // Connect reverb chain
-    masterGain.connect(convolver);
+    reverbGain.gain.setValueAtTime(0.28, audioContext.currentTime);
+
+    subMix.connect(convolver);
     convolver.connect(reverbGain);
-    reverbGain.connect(audioContext.destination);
-    
-    soundTypeNodes.push(convolver, reverbGain);
+    reverbGain.connect(masterGain);
+
+    soundTypeNodes.push(subMix, dryGain, convolver, reverbGain);
     
     // Stop after the specified duration
-    const durationInSeconds = duration * 60;
+    const durationInSeconds = Math.max(0, trackDurationSec);
     setTimeout(() => {
         oscillators.forEach(({ osc, gain }) => {
             const now = audioContext.currentTime;
@@ -1173,35 +1322,59 @@ function generatePsychoacousticMood(stressLevel, duration = 10) {
     console.log('Psychoacoustic mood enhancement scheduled to stop after', durationInSeconds, 'seconds');
 }
 
-// Set playing state (exported for use in app.js)
-function setPlayingState(state) {
-    console.log('Audio playback state:', state ? 'Playing' : 'Paused/Stopped');
-    
-    if (state) {
-        // Resume audio context if suspended
-        if (audioContext && audioContext.state === 'suspended') {
-            audioContext.resume().then(() => {
-                console.log('Audio context resumed successfully');
-            }).catch(err => {
-                console.error('Failed to resume audio context:', err);
-            });
-        }
-    } else {
-        // Suspend audio context to save resources
-        if (audioContext && audioContext.state === 'running') {
-            audioContext.suspend().then(() => {
-                console.log('Audio context suspended successfully');
-            }).catch(err => {
-                console.error('Failed to suspend audio context:', err);
-            });
-        }
-    }
-    
-    // Call the visualizer's setPlayingState if it exists
-    if (window.setPlayingState) {
-        window.setPlayingState(state);
-    }
+/** Layered detuned carriers for cognitive focus; @param {number} trackDurationSec seconds */
+function generateNeuroacoustic(stressLevel, trackDurationSec = 600) {
+    console.log('Generating neuroacoustic with stress level:', stressLevel, 'duration (sec):', trackDurationSec);
+    const t0 = audioContext.currentTime;
+    const base = 200 + stressLevel * 16;
+    const osc1 = audioContext.createOscillator();
+    const osc2 = audioContext.createOscillator();
+    osc1.type = 'sine';
+    osc2.type = 'sine';
+    osc1.frequency.setValueAtTime(base, t0);
+    osc2.frequency.setValueAtTime(base * 1.025, t0);
+    const g1 = audioContext.createGain();
+    const g2 = audioContext.createGain();
+    g1.gain.value = 0.22;
+    g2.gain.value = 0.22;
+    osc1.connect(g1);
+    osc2.connect(g2);
+    g1.connect(masterGain);
+    g2.connect(masterGain);
+    osc1.start(t0);
+    osc2.start(t0);
+    const dur = Math.max(0, trackDurationSec);
+    osc1.stop(t0 + dur);
+    osc2.stop(t0 + dur);
+    soundTypeNodes.push(osc1, osc2, g1, g2);
 }
 
-// Export the setPlayingState function
-window.setPlayingState = setPlayingState; 
+// Playing state: UI + analyser chain + visualizer (via window.__vizSetPlayingState from visualizer.js)
+function setPlayingState(state) {
+    audioEnginePlaying = state;
+
+    const spatialIndicator = document.querySelector('.spatial-indicator');
+    if (spatialIndicator) {
+        spatialIndicator.classList.toggle('hidden', !state);
+    }
+
+    if (window.__vizSetPlayingState) {
+        try {
+            window.__vizSetPlayingState(state);
+        } catch (error) {
+            console.error("Error updating visualizer state:", error);
+        }
+    }
+
+    if (state && audioContext && masterGain) {
+        try {
+            connectOutputChain();
+        } catch (error) {
+            console.error("Error reconnecting output chain:", error);
+        }
+    }
+
+    console.log(`Playing state set to: ${state}`);
+}
+
+window.setPlayingState = setPlayingState;

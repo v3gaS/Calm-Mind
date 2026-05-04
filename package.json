@@ -1,40 +1,40 @@
 {
-  "name": "audio-system",
-  "version": "0.1.0",
-  "description": "A powerful and flexible audio system for therapeutic sound generation",
-  "main": "src/core/AudioManager.js",
-  "type": "module",
-  "scripts": {
-    "test": "jest",
-    "lint": "eslint src/",
-    "build": "rollup -c",
-    "start": "node src/example.js"
+  "name": "audiotistic-application",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CalmMind — Web Audio relaxation SPA with Three.js visualization (Audiotistic application)",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/v3gaS/Audiotistic_application.git"
   },
-  "dependencies": {
-    "web-audio-api": "^0.2.2"
+  "bugs": {
+    "url": "https://github.com/v3gaS/Audiotistic_application/issues"
+  },
+  "homepage": "https://github.com/v3gaS/Audiotistic_application#readme",
+  "scripts": {
+    "launch": "node launch.cjs",
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "devDependencies": {
-    "@babel/core": "^7.22.0",
-    "@babel/preset-env": "^7.22.0",
-    "babel-jest": "^29.0.0",
-    "eslint": "^8.42.0",
-    "jest": "^29.0.0",
-    "rollup": "^3.25.0"
-  },
-  "jest": {
-    "transform": {
-      "^.+\\.js$": "babel-jest"
-    },
-    "testEnvironment": "jsdom"
+    "@babel/core": "^7.22.5",
+    "@babel/preset-env": "^7.22.5",
+    "babel-jest": "^29.5.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0"
   },
   "keywords": [
-    "audio",
-    "binaural",
-    "solfeggio",
-    "monaural",
-    "therapy",
-    "sound healing"
+    "web-audio",
+    "binaural-beats",
+    "visualization",
+    "three-js",
+    "wellness"
   ],
-  "author": "",
+  "author": "v3gaS",
   "license": "MIT"
-} 
+}

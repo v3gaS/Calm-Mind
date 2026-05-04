@@ -1,33 +1,21 @@
-# Audio System Documentation
+# Documentation
 
-## Overview
-This directory contains all documentation for the Audio System project.
+Supporting notes for **CalmMind** (this repo: [Audiotistic_application](https://github.com/v3gaS/Audiotistic_application)). The runnable app is documented in the [root README](../README.md).
 
-## Directory Structure
+## Layout
 
-### `/api`
-- Technical API documentation
-- Implementation details
-- Class and method references
+| Path | Contents |
+|------|----------|
+| [`guides/`](guides/) | Contributing and dev practices |
+| [`research/`](research/) | Sound therapy / technical research notes |
+| Root `*.md` | Changelog, status, architecture drafts |
 
-### `/guides`
-- Contributing guidelines
-- User guides
-- Developer guides
-- Best practices
+## Entry points
 
-### `/research`
-- Sound therapy research
-- Technical research
-- Implementation studies
-- Scientific references
+- [Contributing](guides/CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
+- [Project status](PROJECT_STATUS.md) (historical / planning)
 
-## Key Documents
-- [Changelog](CHANGELOG.md) - Version history and changes
-- [Project Log](PROJECT_LOG.md) - Development progress and decisions
-- [Improvements](IMPROVEMENTS.md) - Planned improvements and roadmap
+## Note
 
-## Getting Started
-1. Read the [API Documentation](api/audio-system.md) for technical details
-2. Check the [Contributing Guide](guides/CONTRIBUTING.md) for development guidelines
-3. Review the [Research Documents](research/) for background information 
+Older references to an `/api` doc tree have been removed; the shipped surface is the static SPA (`index.html` + root `*.js`). Module-level APIs live in [`src/`](../src/) and tests in [`tests/`](../tests/).

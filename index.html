@@ -17,9 +17,10 @@
         </header>
         
         <section id="settings" class="glass-section">
-            <h2>Settings</h2>
+            <h2 class="panel-title">Settings</h2>
+            <p class="section-label">Appearance</p>
             <div class="form-group">
-                <label for="themeSelector">Theme:</label>
+                <label for="themeSelector">Theme</label>
                 <select id="themeSelector" name="theme">
                     <option value="dark">Dark (Default)</option>
                     <option value="light">Light</option>
@@ -30,7 +31,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="animationsToggle">Animations:</label>
+                <label for="animationsToggle">Animations</label>
                 <select id="animationsToggle" name="animations">
                     <option value="enabled">Enabled</option>
                     <option value="disabled">Disabled</option>
@@ -38,97 +39,123 @@
             </div>
         </section>
         
-        <section id="settingsSection" class="glass-section settings-section">
-            <h2>How are you feeling?</h2>
-
-            <div class="form-group range-container">
-                <label for="stressLevel">Stress Level (1-10):</label>
+        <section id="playerSection" class="glass-section">
+            <h2 class="panel-title">Session</h2>
+            <p class="section-label">How you feel</p>
+            <div class="form-group">
+                <label for="stressLevel">Stress level (1–10)</label>
                 <input type="range" id="stressLevel" min="1" max="10" value="5">
-                <span class="range-value" id="stressLevelValue">5</span>
+                <span id="stressDisplay" class="stress-display">5</span>
             </div>
 
             <div class="form-group">
-                <label for="duration">Duration (minutes):</label>
-                <select id="duration">
-                    <option value="5">5 minutes</option>
-                    <option value="10" selected>10 minutes</option>
-                    <option value="15">15 minutes</option>
-                    <option value="20">20 minutes</option>
-                    <option value="30">30 minutes</option>
-                </select>
+                <label for="duration">Duration (minutes)</label>
+                <input type="number" id="duration" min="1" max="60" value="10">
             </div>
 
+            <p class="section-label">Background</p>
             <div class="form-group">
-                <label for="ambientSound">Ambient Sound:</label>
+                <label for="ambientSound">Ambient sound</label>
                 <select id="ambientSound">
                     <option value="none">None</option>
                     <option value="rain">Rain</option>
-                    <option value="forest">Forest</option>
                     <option value="ocean">Ocean</option>
-                    <option value="cafe">Cafe</option>
+                    <option value="forest">Forest</option>
                 </select>
             </div>
 
+            <p class="section-label">Sound & visualization</p>
             <div class="form-group">
-                <label for="soundType">Sound Type (Brain Function):</label>
+                <label for="soundType">Sound type</label>
                 <select id="soundType">
-                    <option value="binauralRelax">Binaural Beats (Relaxation)</option>
-                    <option value="binauralFocus">Binaural Beats (Focus)</option>
-                    <option value="binauralSleep">Binaural Beats (Sleep)</option>
-                    <option value="isochronicEnergy">Isochronic Tones (Energy)</option>
-                    <option value="isochronicMeditate">Isochronic Tones (Meditation)</option>
+                    <optgroup label="Binaural beats">
+                        <option value="binauralRelax">Binaural · Relaxation</option>
+                        <option value="binauralFocus">Binaural · Focus</option>
+                        <option value="binauralSleep">Binaural · Sleep</option>
+                    </optgroup>
+                    <optgroup label="Isochronic tones">
+                        <option value="isochronicEnergy">Isochronic · Energy</option>
+                        <option value="isochronicMeditate">Isochronic · Meditation</option>
+                    </optgroup>
+                    <optgroup label="Noise & nature">
+                        <option value="pinkNoise">Pink noise · Deep sleep</option>
+                        <option value="nature">Nature · Enhanced</option>
+                    </optgroup>
+                    <optgroup label="Tones & rhythms">
+                        <option value="solfeggio">Solfeggio frequencies</option>
+                        <option value="monaural">Monaural beats</option>
+                        <option value="gamma">Gamma waves</option>
+                        <option value="hrv">HRV coherence</option>
+                    </optgroup>
+                    <optgroup label="Immersive">
+                        <option value="soundBath">Sound bath</option>
+                        <option value="psychoacoustic">Psychoacoustic mood</option>
+                        <option value="neuroacoustic">Neuroacoustic</option>
+                    </optgroup>
                 </select>
+                <p id="soundTypeHint" class="field-hint" aria-live="polite"></p>
             </div>
 
             <div class="form-group">
-                <label for="visualizerType">Visualizer Type:</label>
+                <label for="visualizerType">Visualizer</label>
                 <select id="visualizerType">
                     <option value="particles" selected>Particles</option>
-                    <option value="meshWave">3D Mesh Wave</option>
-                    <!-- Add other visualizer types here -->
+                    <option value="meshWave">3D mesh wave</option>
                 </select>
             </div>
 
-            <button id="generateButton">Generate Track</button>
+            <div class="form-group">
+                <label for="volumeSlider">Volume</label>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+
+            <div class="playback-block">
+                <button type="button" id="generateButton" class="btn btn--primary">Generate track</button>
+                <div class="player-controls">
+                    <button type="button" id="playButton" class="btn btn--secondary" disabled>Play</button>
+                    <button type="button" id="stopButton" class="btn btn--secondary" disabled>Stop</button>
+                    <div id="spatialIndicator" class="spatial-indicator hidden">
+                        <span class="left-channel">L</span>
+                        <span class="right-channel">R</span>
+                    </div>
+                </div>
+                <div id="trackInfo" class="track-info"></div>
+            </div>
         </section>
         
-        <section id="playerSection" class="hidden glass-section player-section">
-            <h2>Now Playing</h2>
-            <p id="trackInfo">Generate a track to start</p>
-            <canvas id="visualizer"></canvas>
-            <div id="spatialIndicator" class="spatial-indicator hidden">
-                <div class="wave left"></div>
-                <div class="wave right"></div>
-            </div>
-            <div class="player-controls">
-                <button id="playBtn" class="control-button">Play</button>
-                <button id="stopButton" class="control-button">Stop</button>
-                <button id="skipBtn" class="control-button">Skip</button>
-                <button id="loopBtn" class="control-button">Loop</button>
-            </div>
-            <div class="volume-control">
-                <label for="volume">Volume:</label>
-                <input type="range" id="volume" min="0" max="1" step="0.01" value="0.7">
+        <section id="visualizerContainer" class="glass-section viz-panel">
+            <h2 class="panel-title viz-panel__title">Visualization</h2>
+            <div class="viz-panel__stage">
+                <canvas id="visualizerCanvas"></canvas>
             </div>
         </section>
         
         <section id="info" class="glass-section">
-            <h2>About CalmMind Sound Technologies</h2>
-            <p>CalmMind uses cutting-edge audio technologies to promote relaxation, focus, and mental wellbeing:</p>
-            <ul class="sound-info-list">
-                <li><strong>Binaural Beats:</strong> Created by playing two slightly different frequencies in each ear, binaural beats can influence brainwave activity to promote relaxation. Best experienced with headphones.</li>
-                <li><strong>Solfeggio Frequencies:</strong> Ancient musical tones with healing properties that are said to affect different aspects of consciousness and wellbeing.</li>
-                <li><strong>Monaural Beats:</strong> Similar to binaural beats but with modulation happening before reaching the ears, making them effective even without headphones.</li>
-                <li><strong>Gamma Waves:</strong> Higher frequency brainwave patterns associated with peak cognitive performance, learning, and memory.</li>
-                <li><strong>HRV Coherence:</strong> Sound patterns synchronized with optimal breathing rates to promote heart-brain coherence and reduce stress.</li>
-                <li><strong>Sound Bath:</strong> A virtual recreation of traditional Tibetan singing bowls and gongs, creating an immersive healing environment with rich harmonics and spatial audio positioning.</li>
-                <li><strong>Psychoacoustic Harmony:</strong> Advanced harmonic progressions and spatial audio designed to directly influence emotional state through carefully crafted timbres and resonances.</li>
-            </ul>
-            <p class="tip"><strong>Tip:</strong> For most sound types, headphones are recommended for the best experience. The Sound Bath and Psychoacoustic features are especially immersive with good stereo headphones.</p>
+            <details class="about-details">
+                <summary class="about-details__summary">About these sound types</summary>
+                <div class="about-details__content">
+                    <h2 class="about-details__heading">CalmMind sound technologies</h2>
+                    <p>CalmMind uses audio approaches to support relaxation, focus, and mental wellbeing:</p>
+                    <ul class="sound-info-list">
+                        <li><strong>Binaural Beats:</strong> Created by playing two slightly different frequencies in each ear, binaural beats can influence brainwave activity to promote relaxation. Best experienced with headphones.</li>
+                        <li><strong>Isochronic Tones:</strong> Regular beats of a single tone that can entrain brainwaves to specific frequencies, useful for meditation and focus.</li>
+                        <li><strong>Pink Noise:</strong> A balanced noise spectrum that helps mask disruptive sounds and promote deep sleep.</li>
+                        <li><strong>Nature Sounds:</strong> Enhanced bioacoustic frequencies from natural environments that reduce stress and anxiety.</li>
+                        <li><strong>Solfeggio Frequencies:</strong> Ancient musical tones with healing properties that are said to affect different aspects of consciousness and wellbeing.</li>
+                        <li><strong>Monaural Beats:</strong> Similar to binaural beats but with modulation happening before reaching the ears, making them effective even without headphones.</li>
+                        <li><strong>Gamma Waves:</strong> Higher frequency brainwave patterns associated with peak cognitive performance, learning, and memory.</li>
+                        <li><strong>HRV Coherence:</strong> Sound patterns synchronized with optimal breathing rates to promote heart-brain coherence and reduce stress.</li>
+                        <li><strong>Sound Bath:</strong> A virtual recreation of traditional Tibetan singing bowls and gongs, creating an immersive healing environment with rich harmonics and spatial audio positioning.</li>
+                        <li><strong>Psychoacoustic Harmony:</strong> Advanced harmonic progressions and spatial audio designed to directly influence emotional state through carefully crafted timbres and resonances.</li>
+                        <li><strong>Neuroacoustic:</strong> Brain-optimized frequencies that enhance cognitive function and mental clarity.</li>
+                    </ul>
+                    <p class="tip"><strong>Tip:</strong> For most sound types, headphones are recommended for the best experience. The Sound Bath and Psychoacoustic features are especially immersive with good stereo headphones.</p>
+                </div>
+            </details>
         </section>
         
         <footer>
-            <p>&copy; 2025 CalmMind. All rights reserved.</p>
+            <p>&copy; 2026 CalmMind. All rights reserved.</p>
         </footer>
     </div>
     
@@ -137,4 +164,4 @@
     <script src="visualizer.js"></script>
     <script src="app.js"></script>
 </body>
-</html> 
+</html>
