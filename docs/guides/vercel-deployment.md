@@ -49,7 +49,7 @@ Monitor **Usage** in the Vercel dashboard if traffic grows. Long-cache headers o
 3. **Build & Development Settings** (must match `vercel.json`):
    - **Install Command:** `npm ci --omit=dev`
    - **Build Command:** `node scripts/copy-vercel-analytics.cjs`
-   - **Output Directory:** `.` (repository root)
+   - **Output Directory:** `.` (repository root; also set in [`vercel.json`](../../vercel.json) as `outputDirectory`)
    - **Root Directory:** `.`
 4. **Production Branch:** `main`.
 5. **Environment variables:** none required.
@@ -119,6 +119,7 @@ Run on preview URL first, then production:
 - [ ] Volume and transport controls work
 - [ ] Optional: `/index-legacy.html` loads (Three.js CDN)
 - [ ] Mobile viewport layout acceptable
+- [ ] SEO / legal: `/about.html`, `/privacy.html`, `/disclaimer.html`, `/robots.txt`, `/sitemap.xml` return 200 — see [public-site-seo.md](public-site-seo.md)
 
 ---
 
@@ -141,3 +142,4 @@ Run on preview URL first, then production:
 | [github-publication.md](github-publication.md) | Pre-push GitHub checklist |
 | [development.md](development.md) | Conventions |
 | [architecture/overview.md](../architecture/overview.md) | Script load order |
+| [public-site-seo.md](public-site-seo.md) | Meta, About, sitemap, Search Console |

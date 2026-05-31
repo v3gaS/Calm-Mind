@@ -13,4 +13,3 @@ server.js
 launch.cjs
 lib/
 CalmMind.command
-package-lock.json

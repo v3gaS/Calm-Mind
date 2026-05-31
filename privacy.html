@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="CalmMind privacy policy — local storage, Vercel Web Analytics, and third-party services." />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href="https://usecalmmind.com/privacy.html" />
+<title>Privacy — CalmMind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="client/css/legal.css" />
+</head>
+<body class="legal-page">
+<header class="legal-header">
+  <a href="/"><img class="legal-logo" src="assets/branding/CalmMind_Logo.jpg" alt="CalmMind" width="160" height="48" decoding="async" /></a>
+  <a class="legal-back" href="/">← Open CalmMind</a>
+</header>
+<main class="legal-main">
+  <h1>Privacy</h1>
+  <p class="lead">How CalmMind handles data when you use <a href="https://usecalmmind.com/">usecalmmind.com</a>.</p>
+
+  <h2>Summary</h2>
+  <p>CalmMind is a <strong>browser-based wellness tool</strong>. There is no account system and no cloud sync of your session preferences. Most data stays on your device.</p>
+
+  <h2>Stored on your device</h2>
+  <div class="legal-table-wrap">
+    <table class="legal-table">
+      <thead>
+        <tr><th>Data</th><th>Where</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>UI preferences (stress, duration, sound type, volume, viz, etc.)</td>
+          <td><code>localStorage</code> key <code>calmMindState</code></td>
+          <td>Restore settings between visits</td>
+        </tr>
+        <tr>
+          <td>Session history entries</td>
+          <td>Same <code>localStorage</code> object</td>
+          <td>Optional session log in the UI</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Clearing site data in your browser removes this information.</p>
+
+  <h2>What the app code does not collect</h2>
+  <ul>
+    <li>No mandatory sign-in</li>
+    <li>No payment or health-record fields in the shipped client</li>
+    <li>No transmission of <code>localStorage</code> to a CalmMind-operated backend (the site is statically hosted)</li>
+  </ul>
+
+  <h2>Web analytics (production site)</h2>
+  <p>When you use the public site at usecalmmind.com, <strong>Vercel Web Analytics</strong> may collect privacy-friendly usage metrics such as page views, referrers, and coarse device/browser characteristics. This helps us understand how the site is used. See <a href="https://vercel.com/docs/analytics" rel="noopener noreferrer">Vercel Analytics documentation</a> for details.</p>
+
+  <h2>Third-party services</h2>
+  <ul>
+    <li><strong>Google Fonts</strong> — typography is loaded from Google’s CDN; your browser may request fonts from Google when you open the app.</li>
+    <li><strong>Legacy UI</strong> (<a href="index-legacy.html">index-legacy.html</a>) loads Three.js from a public CDN if you use that entry.</li>
+    <li><strong>Ambient audio</strong> — nature loops are served from the same origin (<code>/assets/audio/ambient/</code>), not from a separate tracking endpoint.</li>
+  </ul>
+
+  <h2>Sensitive information</h2>
+  <p>Do <strong>not</strong> store clinical notes, client identifiers, or passwords in <code>localStorage</code>. Do not enter health information you would not want on your local device.</p>
+
+  <h2>Contact</h2>
+  <p>Privacy and permission questions: <a href="mailto:JValachovic@gmail.com">JValachovic@gmail.com</a></p>
+
+  <div class="cta-box">
+    <a class="cta-primary" href="/">Open CalmMind</a>
+  </div>
+</main>
+<footer class="legal-footer">
+  <nav>
+    <a href="/">App</a>
+    <a href="about.html">About</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="disclaimer.html">Disclaimer</a>
+  </nav>
+  <p>All rights reserved.</p>
+</footer>
+</body>
+</html>

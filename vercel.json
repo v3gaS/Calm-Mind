@@ -1,6 +1,7 @@
 {
   "installCommand": "npm ci --omit=dev",
   "buildCommand": "node scripts/copy-vercel-analytics.cjs",
+  "outputDirectory": ".",
   "framework": null,
   "redirects": [
     {

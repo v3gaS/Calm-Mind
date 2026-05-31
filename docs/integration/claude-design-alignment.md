@@ -71,7 +71,7 @@ Full behavior table and per-mode mapping: [`subsystems/visualization.md`](../sub
 
 ## DOM IDs (design UI)
 
-`#app`, `#viz`, `.brand-logo`, `#stress`, `#duration`, `#ambient`, `#soundType`, `#generate`, `.wellness-note` (inside `#setup`, below Generate), `#volume`, `#headphonesHint` (auto-dismiss ~4.5s on compose; hidden while playing), `#moodBefore`, `#moodAfter`, playing chrome (`#bandName`, `#beatHz`, dock controls).
+`#app`, `#viz`, `.brand-logo`, `.brand-title` (h1), `.brand-tagline`, `#stress`, `#duration`, `#ambient`, `#soundType`, `#generate`, `.wellness-note`, `.compose-legal` (About · Privacy · Disclaimer under wellness note), `#volume`, `#headphonesHint` (auto-dismiss ~4.5s on compose; hidden while playing), `#moodBefore`, `#moodAfter`, playing chrome (`#bandName`, `#beatHz`, dock controls).
 
 **Branding:** [`assets/branding/CalmMind_Logo.jpg`](../../assets/branding/CalmMind_Logo.jpg) (top bar).
 

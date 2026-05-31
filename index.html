@@ -3,9 +3,35 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="CalmMind — browser-based relaxation audio with binaural beats, ambient nature layers, and audio-reactive canvas visualizers. Wellness tool only; not a medical device." />
-<meta name="author" content="John Valachovic" />
-<title>CalmMind</title>
+<meta name="description" content="Years of neurological research, distilled into your browser: personalized sound and reactive visuals for stress, sleep, and focus. Guided recipes. Not a medical device." />
+<meta name="robots" content="index, follow" />
+<meta name="theme-color" content="#06060f" />
+<link rel="canonical" href="https://usecalmmind.com/" />
+<title>CalmMind — Wellness Audio Informed by Neurological Research</title>
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://usecalmmind.com/" />
+<meta property="og:title" content="CalmMind — Research-Informed Sound &amp; Visuals for Calm" />
+<meta property="og:description" content="Years of neurological research, distilled into your browser: personalized sound and reactive visuals for stress, sleep, and focus. Not a medical device." />
+<meta property="og:image" content="https://usecalmmind.com/assets/promo/og-share.jpg" />
+<meta property="og:site_name" content="CalmMind" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="CalmMind — Research-Informed Sound &amp; Visuals for Calm" />
+<meta name="twitter:description" content="Personalized wellness audio and reactive visuals for stress, sleep, and focus. Not a medical device." />
+<meta name="twitter:image" content="https://usecalmmind.com/assets/promo/og-share.jpg" />
+<link rel="apple-touch-icon" href="assets/branding/CalmMind_Logo.jpg" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "CalmMind",
+  "url": "https://usecalmmind.com/",
+  "description": "A browser wellness tool informed by neurological research: personalized sound and reactive visuals to help with stress, sleep, and focus. Not a medical device.",
+  "applicationCategory": "LifestyleApplication",
+  "operatingSystem": "Any (modern browser)",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -22,7 +48,11 @@
   <div class="ui">
     <div class="topbar">
       <div class="brand">
-        <img class="brand-logo" src="assets/branding/CalmMind_Logo.jpg" alt="CalmMind" width="160" height="48" decoding="async" />
+        <img class="brand-logo" src="assets/branding/CalmMind_Logo.jpg" alt="" width="160" height="48" decoding="async" />
+        <div class="brand-text">
+          <h1 class="brand-title">CalmMind</h1>
+          <p class="brand-tagline">Wellness audio for calm, sleep &amp; focus</p>
+        </div>
       </div>
       <div class="status"><span class="dot"></span><span id="statusText">READY</span></div>
     </div>
@@ -33,7 +63,7 @@
 
     <div class="compose panel" id="setup">
       <h2>Compose your session</h2>
-      <div class="sub">Tune the sound to how you feel — we'll synthesize a track to guide your mind there.</div>
+      <div class="sub">Sessions informed by years of neurological research — personalized sound and visuals that respond as you listen. Pick a guided recipe or stay custom. <a class="sub-link" href="about.html">Learn more</a></div>
 
       <div class="field">
         <span class="lab">How you feel · stress</span>
@@ -91,6 +121,9 @@
         Generate track
       </button>
       <p class="wellness-note">CalmMind is a wellness tool, not a medical device. Brain-band labels reflect target frequencies, not live EEG.</p>
+      <nav class="compose-legal" aria-label="Site information">
+        <a href="about.html">About</a><span class="sep" aria-hidden="true">·</span><a href="privacy.html">Privacy</a><span class="sep" aria-hidden="true">·</span><a href="disclaimer.html">Disclaimer</a>
+      </nav>
     </div>
 
     <div class="breathcue" id="breathCue">

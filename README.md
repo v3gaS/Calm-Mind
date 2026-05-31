@@ -79,6 +79,7 @@ CalmMind ships as static files from the repo root — no build step. [`vercel.js
 | Push to `main` | Production deploy via GitHub integration |
 | `npm run vercel-deploy` | Manual production deploy via Vercel CLI |
 | [docs/guides/vercel-deployment.md](docs/guides/vercel-deployment.md) | Dashboard, domain, smoke checklist |
+| [docs/guides/public-site-seo.md](docs/guides/public-site-seo.md) | About, meta, sitemap, Search Console |
 
 ---
 
@@ -155,6 +156,7 @@ masterGain → AnalyserNode → CalmMindAudioReactive → CalmMind.frame → Cal
 | [AGENTS.md](AGENTS.md) | Cursor / agent instructions |
 | [docs/guides/github-publication.md](docs/guides/github-publication.md) | Pre-push / GitHub upload checklist |
 | [docs/guides/vercel-deployment.md](docs/guides/vercel-deployment.md) | Vercel + useCalmMind.com |
+| [docs/guides/public-site-seo.md](docs/guides/public-site-seo.md) | Public About, SEO, legal pages |
 
 ---
 

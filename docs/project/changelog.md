@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Compose panel: single faint legal row under wellness note (Manrope); removed duplicate top-bar links
+- Public pages: removed personal name from footers and `index.html` meta / JSON-LD author
+
 ### Added
 
+- Public SEO and legal pages: [`about.html`](../../about.html), [`privacy.html`](../../privacy.html), [`disclaimer.html`](../../disclaimer.html), [`robots.txt`](../../robots.txt), [`sitemap.xml`](../../sitemap.xml), [`client/css/legal.css`](../../client/css/legal.css), guide [`docs/guides/public-site-seo.md`](../guides/public-site-seo.md)
+- `index.html` Open Graph, Twitter Card, canonical URL, JSON-LD, in-app footer, research-informed compose copy
+- `vercel.json` `outputDirectory: "."` for static root deploy; `package-lock.json` kept in upload for `npm ci`
 - Vercel static deployment config ([`vercel.json`](../../vercel.json), [`.vercelignore`](../../.vercelignore)), guide [`docs/guides/vercel-deployment.md`](../guides/vercel-deployment.md) for [useCalmMind.com](https://useCalmMind.com); `www` → apex redirect
 - Vercel Web Analytics via `@vercel/analytics` (`inject()` in [`client/js/vercel-analytics-init.js`](../../client/js/vercel-analytics-init.js))
 - GitHub publication guide ([`docs/guides/github-publication.md`](../guides/github-publication.md)), `.gitattributes`, `.nvmrc`, `.editorconfig`
