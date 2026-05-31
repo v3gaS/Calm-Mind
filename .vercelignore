@@ -1,8 +1,8 @@
+node_modules/
 archive/
 tests/
 src/
 docs/
-scripts/
 .github/
 coverage/
 *.md

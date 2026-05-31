@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Vercel static deployment config ([`vercel.json`](../../vercel.json), [`.vercelignore`](../../.vercelignore)), guide [`docs/guides/vercel-deployment.md`](../guides/vercel-deployment.md) for [useCalmMind.com](https://useCalmMind.com); `www` → apex redirect
+- Vercel Web Analytics via `@vercel/analytics` (`inject()` in [`client/js/vercel-analytics-init.js`](../../client/js/vercel-analytics-init.js))
 - GitHub publication guide ([`docs/guides/github-publication.md`](../guides/github-publication.md)), `.gitattributes`, `.nvmrc`, `.editorconfig`
 - `.gitignore` rules for local Claude Design export folders and promo capture frames
 

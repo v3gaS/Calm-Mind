@@ -26,14 +26,16 @@ index.html (Claude Design UI)
   ├── client/js/audio-reactive-bridge.js
   ├── client/js/calm-viz.js
   ├── client/js/design-bridge.js
-  └── client/js/design-shell.js
+  ├── client/js/design-shell.js
+  └── client/js/vercel-analytics-init.js  →  @vercel/analytics inject()
 
 index-legacy.html (previous Three.js UI)
   ├── Three.js r128 (CDN)
   ├── client/js/src-bridge.js  →  src/visualization/configs/visualizerConfigs.js
   ├── … (same audio stack as above)
   ├── client/js/visualizer.js
-  └── client/js/app.js
+  ├── client/js/app.js
+  └── client/js/vercel-analytics-init.js
 ```
 
 Serve over **HTTP** (`npm run launch` or `npm run dev`). Web Audio and ES module loading fail or degrade under `file://`.

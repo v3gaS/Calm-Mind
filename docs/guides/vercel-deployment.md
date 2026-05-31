@@ -14,7 +14,7 @@ Production does **not** run [`server.js`](../../server.js) or [`lib/static-serve
 | Server | Node static HTTP on port 3000–3099 | Vercel CDN serves files from repo root |
 | Entry | [`index.html`](../../index.html) | Same |
 | Ambient audio | `fetch('/assets/audio/ambient/...')` | Same absolute paths |
-| Build | None | None (`vercel.json` empty install/build) |
+| Build | `npm run postinstall` copies analytics bundle | `npm ci --omit=dev` + copy script (`vercel.json`) |
 
 ---
 
@@ -22,8 +22,9 @@ Production does **not** run [`server.js`](../../server.js) or [`lib/static-serve
 
 | File | Purpose |
 |------|---------|
-| [`vercel.json`](../../vercel.json) | Static overrides, cache headers for `/assets/` and `/client/`, security headers |
-| [`.vercelignore`](../../.vercelignore) | Excludes `archive/`, `tests/`, `src/`, `docs/`, dev server — keeps Hobby upload under limits |
+| [`vercel.json`](../../vercel.json) | Static overrides, analytics build step, cache/security headers |
+| [`.vercelignore`](../../.vercelignore) | Excludes `node_modules/`, `archive/`, `tests/`, `src/`, `docs/`, dev server |
+| [`client/js/vercel-analytics-init.js`](../../client/js/vercel-analytics-init.js) | Loads `@vercel/analytics` via `inject()` (not Next.js `Analytics`) |
 
 Tracked deploy footprint is **~71 MB** (ambient `.ogg` files dominate), under the **Hobby 100 MB** static upload limit.
 
@@ -46,13 +47,21 @@ Monitor **Usage** in the Vercel dashboard if traffic grows. Long-cache headers o
 1. [Vercel Dashboard](https://vercel.com/dashboard) → **Add New** → **Project** → Import [github.com/v3gaS/Calm-Mind](https://github.com/v3gaS/Calm-Mind).
 2. **Framework Preset:** Other.
 3. **Build & Development Settings** (must match `vercel.json`):
-   - **Install Command:** *(empty)*
-   - **Build Command:** *(empty)*
+   - **Install Command:** `npm ci --omit=dev`
+   - **Build Command:** `node scripts/copy-vercel-analytics.cjs`
    - **Output Directory:** `.` (repository root)
    - **Root Directory:** `.`
 4. **Production Branch:** `main`.
 5. **Environment variables:** none required.
 6. Deploy and confirm the build log uploads **static files**, not a Node server for `server.js`.
+
+### Web Analytics
+
+1. Project → **Analytics** → **Enable** Web Analytics for the project.
+2. Redeploy after enabling so `/_vercel/insights/script.js` is served.
+3. Shipped code: `@vercel/analytics` → [`client/js/vercel-analytics-init.js`](../../client/js/vercel-analytics-init.js) calls `inject()`. Do **not** use `@vercel/analytics/next` — this app is a static HTML SPA, not Next.js.
+
+Local: `npm install` runs `postinstall` and copies `client/js/vercel-analytics.mjs`.
 
 ### Domain (useCalmMind.com)
 

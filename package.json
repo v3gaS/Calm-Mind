@@ -20,7 +20,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "vercel-deploy": "vercel deploy --prod"
+    "vercel-deploy": "vercel deploy --prod",
+    "postinstall": "node scripts/copy-vercel-analytics.cjs"
   },
   "devDependencies": {
     "@babel/core": "^7.22.5",
@@ -44,5 +45,8 @@
     "emdr-inspired"
   ],
   "author": "John Valachovic",
-  "license": "SEE LICENSE IN LICENSE"
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
 }
