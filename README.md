@@ -68,6 +68,20 @@ npm run launch
 
 ---
 
+## Deploy (production)
+
+**Live site:** [https://useCalmMind.com](https://useCalmMind.com) (Vercel static hosting).
+
+CalmMind ships as static files from the repo root — no build step. [`vercel.json`](vercel.json) and [`.vercelignore`](.vercelignore) configure zero-build deploys, CDN caching, and upload size for the Hobby plan.
+
+| Path | Description |
+|------|-------------|
+| Push to `main` | Production deploy via GitHub integration |
+| `npm run vercel-deploy` | Manual production deploy via Vercel CLI |
+| [docs/guides/vercel-deployment.md](docs/guides/vercel-deployment.md) | Dashboard, domain, smoke checklist |
+
+---
+
 ## Promotion assets
 
 | Asset | Use |
@@ -140,6 +154,7 @@ masterGain → AnalyserNode → CalmMindAudioReactive → CalmMind.frame → Cal
 | [docs/guides/development.md](docs/guides/development.md) | Conventions |
 | [AGENTS.md](AGENTS.md) | Cursor / agent instructions |
 | [docs/guides/github-publication.md](docs/guides/github-publication.md) | Pre-push / GitHub upload checklist |
+| [docs/guides/vercel-deployment.md](docs/guides/vercel-deployment.md) | Vercel + useCalmMind.com |
 
 ---
 

@@ -91,7 +91,7 @@ See [`subsystems/visualization.md`](../subsystems/visualization.md) and [`integr
 
 - Ambient audio: [`assets/audio/ambient/`](../assets/audio/ambient/) (CC0, see [`assets/audio/ATTRIBUTION.md`](../assets/audio/ATTRIBUTION.md))
 - Branding: [`assets/branding/CalmMind_Logo.jpg`](../assets/branding/CalmMind_Logo.jpg)
-- Served as static files by [`server.js`](../server.js) / [`launch.cjs`](../launch.cjs)
+- Served locally by [`server.js`](../server.js) / [`launch.cjs`](../launch.cjs); production static hosting on Vercel ([`vercel.json`](../vercel.json), [`docs/guides/vercel-deployment.md`](../guides/vercel-deployment.md))
 
 ## Modular `src/` (Jest-tested)
 
@@ -124,7 +124,9 @@ Archived trees are not loaded by `index.html` or Jest.
 
 ## Server
 
-[`server.js`](../server.js) and [`launch.cjs`](../launch.cjs) are static file servers from the repo root. Port 3000 by default, auto-increment to 3099 if busy. MIME types include `.ogg` for ambient playback.
+**Local:** [`server.js`](../server.js) and [`launch.cjs`](../launch.cjs) serve static files from the repo root (port 3000 by default, auto-increment to 3099 if busy). MIME types include `.ogg` for ambient playback.
+
+**Production:** Vercel CDN — see [`docs/guides/vercel-deployment.md`](../guides/vercel-deployment.md).
 
 ## Data flow (playback session)
 

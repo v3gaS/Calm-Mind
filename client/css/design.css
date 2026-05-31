@@ -190,9 +190,10 @@
   .headphones-hint{position:absolute;top:72px;left:50%;transform:translateX(-50%);z-index:6;
     max-width:min(520px,90vw);padding:10px 16px;border-radius:12px;font-size:12px;line-height:1.45;
     color:var(--ink);background:rgba(34,211,238,0.12);border:1px solid rgba(34,211,238,0.35);
-    backdrop-filter:blur(12px);text-align:center;}
+    backdrop-filter:blur(12px);text-align:center;transition:opacity .35s ease;}
   .headphones-hint.hidden{display:none;}
+  .headphones-hint.fading{opacity:0;pointer-events:none;}
+  #app.state-playing .headphones-hint{display:none;}
   .mood-val{font-family:'Bricolage Grotesque';font-size:18px;color:var(--cyan);}
-  .wellness-note{position:absolute;bottom:100px;left:50%;transform:translateX(-50%);z-index:4;
-    font-size:10px;color:var(--faint);max-width:420px;text-align:center;line-height:1.4;opacity:0.85;}
-  #app.state-playing .wellness-note{display:none;}
+  .compose .wellness-note{margin-top:14px;font-size:10px;color:var(--faint);text-align:center;
+    line-height:1.45;opacity:0.9;position:relative;z-index:1;}

@@ -20,6 +20,7 @@ Runnable app quick start: [root README](../README.md).
 | Visualizer behavior | [`subsystems/visualization.md`](subsystems/visualization.md) |
 | Repo conventions / PR checklist | [`guides/development.md`](guides/development.md) |
 | Publish or refresh GitHub repo | [`guides/github-publication.md`](guides/github-publication.md) |
+| Deploy to Vercel (useCalmMind.com) | [`guides/vercel-deployment.md`](guides/vercel-deployment.md) |
 | Current status / roadmap | [`project/status-and-roadmap.md`](project/status-and-roadmap.md) |
 | Release notes | [`project/changelog.md`](project/changelog.md) |
 | Therapy / product content context | [`guides/therapy.md`](guides/therapy.md) |

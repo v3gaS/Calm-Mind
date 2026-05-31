@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/v3gaS/Calm-Mind/issues"
   },
-  "homepage": "https://github.com/v3gaS/Calm-Mind#readme",
+  "homepage": "https://useCalmMind.com",
   "scripts": {
     "launch": "node launch.cjs",
     "start": "node server.js",
@@ -19,7 +19,8 @@
     "capture:promo": "node scripts/capture-app-promo.mjs",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "vercel-deploy": "vercel deploy --prod"
   },
   "devDependencies": {
     "@babel/core": "^7.22.5",

@@ -89,6 +89,7 @@
         syncStress();
         syncDuration();
         refreshReadout();
+        updateHeadphonesHint();
     }
 
     function stressLabel(v) {
@@ -156,13 +157,46 @@
         return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
     }
 
-    function updateHeadphonesHint() {
+    const HEADPHONES_HINT_MS = 4500;
+    let headphonesHintTimer = null;
+
+    function hideHeadphonesHint() {
         const hint = $('headphonesHint');
         if (!hint) return;
+        clearTimeout(headphonesHintTimer);
+        headphonesHintTimer = null;
+        hint.classList.remove('fading');
+        hint.classList.add('hidden');
+    }
+
+    function showHeadphonesHintBriefly() {
+        const hint = $('headphonesHint');
+        if (!hint || app.classList.contains('state-playing')) return;
         const info = CM.freqInfo(soundSel.value, +$('stress').value);
-        const ses = CM.live.active && CM.live.session;
-        const show = info.headphones || ses?.headphonesRequired;
-        hint.classList.toggle('hidden', !show);
+        if (!info.headphones) {
+            hideHeadphonesHint();
+            return;
+        }
+        clearTimeout(headphonesHintTimer);
+        hint.classList.remove('fading', 'hidden');
+        headphonesHintTimer = setTimeout(() => {
+            hint.classList.add('fading');
+            headphonesHintTimer = setTimeout(() => {
+                hint.classList.add('hidden');
+                hint.classList.remove('fading');
+                headphonesHintTimer = null;
+            }, 350);
+        }, HEADPHONES_HINT_MS);
+    }
+
+    function updateHeadphonesHint() {
+        if (app.classList.contains('state-playing')) {
+            hideHeadphonesHint();
+            return;
+        }
+        const info = CM.freqInfo(soundSel.value, +$('stress').value);
+        if (info.headphones) showHeadphonesHintBriefly();
+        else hideHeadphonesHint();
     }
 
     function refreshReadout() {
@@ -200,7 +234,6 @@
             CM.setBreathRate(info.breathRate);
         }
         updateBreathVisibility();
-        updateHeadphonesHint();
         buildTimeline();
     }
 
@@ -251,17 +284,18 @@
         $('breathSub').textContent = breathSubLabel();
     }
 
-    function applyState(playing) {
-        app.classList.toggle('state-playing', playing);
-        app.classList.toggle('state-setup', !playing);
+    function applyState(isPlaying) {
+        app.classList.toggle('state-playing', isPlaying);
+        app.classList.toggle('state-setup', !isPlaying);
         const s = $('setup');
-        s.style.opacity = playing ? '0' : '1';
-        s.style.pointerEvents = playing ? 'none' : 'auto';
-        s.style.transform = playing ? 'translate(-50%,-46%) scale(0.98)' : 'translate(-50%,-50%)';
+        s.style.opacity = isPlaying ? '0' : '1';
+        s.style.pointerEvents = isPlaying ? 'none' : 'auto';
+        s.style.transform = isPlaying ? 'translate(-50%,-46%) scale(0.98)' : 'translate(-50%,-50%)';
         document.querySelectorAll('.edge').forEach((e) => {
-            e.style.opacity = playing ? '1' : '0';
-            e.style.pointerEvents = playing ? 'auto' : 'none';
+            e.style.opacity = isPlaying ? '1' : '0';
+            e.style.pointerEvents = isPlaying ? 'auto' : 'none';
         });
+        if (isPlaying) hideHeadphonesHint();
     }
 
     let playing = false;
@@ -482,7 +516,6 @@
                     : Math.round(ses.carrierHz);
             }
             if (ses.phaseIndex != null) highlightPhase(ses.phaseIndex);
-            updateHeadphonesHint();
         }
 
         const cue = $('breathCue');
@@ -531,5 +564,6 @@
     restoreSettings();
     if (!vizInst) mountViz('neural');
     refreshReadout();
+    updateHeadphonesHint();
     requestAnimationFrame(uiFrame);
 })();
