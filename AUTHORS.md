@@ -12,7 +12,7 @@ Use of this software requires **express written permission**. See [LICENSE](LICE
 
 Public source may be hosted at:
 
-[github.com/v3gaS/Audiotistic_application](https://github.com/v3gaS/Audiotistic_application)
+[github.com/v3gaS/Calm-Mind](https://github.com/v3gaS/Calm-Mind)
 
 Hosting location does not grant additional rights beyond [LICENSE](LICENSE).
 

@@ -1,7 +1,7 @@
 # GitHub publication guide
 
 Checklist for publishing **CalmMind** (Audiotistic application) to
-[github.com/v3gaS/Audiotistic_application](https://github.com/v3gaS/Audiotistic_application)
+[github.com/v3gaS/Calm-Mind](https://github.com/v3gaS/Calm-Mind)
 as a professionally packaged public repository.
 
 **Copyright © John Valachovic.** Public hosting does not grant use rights beyond [LICENSE](../../LICENSE).

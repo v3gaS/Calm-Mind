@@ -18,7 +18,7 @@ To request permission, email **[JValachovic@gmail.com](mailto:JValachovic@gmail.
 ## Workflow
 
 1. Confirm your permission scope (see above).
-2. Fork [Audiotistic_application](https://github.com/v3gaS/Audiotistic_application) and create a feature branch.
+2. Fork [Calm-Mind](https://github.com/v3gaS/Calm-Mind) and create a feature branch.
 3. `npm install`
 4. `npm test`
 5. `npm run launch` — smoke-test primary UI; test [`index-legacy.html`](index-legacy.html) if you change shared engine code.

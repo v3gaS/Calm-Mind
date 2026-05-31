@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/v3gaS/Audiotistic_application/actions/workflows/test.yml"><img src="https://github.com/v3gaS/Audiotistic_application/actions/workflows/test.yml/badge.svg" alt="Tests"/></a>
+  <a href="https://github.com/v3gaS/Calm-Mind/actions/workflows/test.yml"><img src="https://github.com/v3gaS/Calm-Mind/actions/workflows/test.yml/badge.svg" alt="Tests"/></a>
 </p>
 
 ---
@@ -47,8 +47,8 @@
 **Requirements:** Node.js 18+, modern browser, **HTTP** (not `file://`).
 
 ```bash
-git clone https://github.com/v3gaS/Audiotistic_application.git
-cd Audiotistic_application
+git clone https://github.com/v3gaS/Calm-Mind.git
+cd Calm-Mind
 npm install
 npm run launch
 ```

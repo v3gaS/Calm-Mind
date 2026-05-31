@@ -6,12 +6,12 @@
   "main": "server.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/v3gaS/Audiotistic_application.git"
+    "url": "https://github.com/v3gaS/Calm-Mind.git"
   },
   "bugs": {
-    "url": "https://github.com/v3gaS/Audiotistic_application/issues"
+    "url": "https://github.com/v3gaS/Calm-Mind/issues"
   },
-  "homepage": "https://github.com/v3gaS/Audiotistic_application#readme",
+  "homepage": "https://github.com/v3gaS/Calm-Mind#readme",
   "scripts": {
     "launch": "node launch.cjs",
     "start": "node server.js",
