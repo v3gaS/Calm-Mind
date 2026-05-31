@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CalmMind legacy UI — binaural beats, ambient layers, and Three.js visualizers. Wellness tool only; not a medical device.">
+    <meta name="author" content="John Valachovic">
+    <title>CalmMind | Binaural Beat Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237668f8'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E">
+</head>
+<body>
+    <div id="app">
+        <header class="app-header">
+            <img src="assets/branding/Logo.png" alt="CalmMind Logo" class="app-logo">
+            <h1>CalmMind</h1>
+            <p class="tagline">Achieve Your Ideal Mood</p>
+        </header>
+
+        <div id="headphonesHint" class="headphones-hint hidden" role="status" aria-live="polite">
+            Headphones recommended for this session for best binaural or bilateral effect.
+        </div>
+        
+        <section id="settings" class="glass-section">
+            <h2 class="panel-title">Settings</h2>
+            <p class="section-label">Appearance</p>
+            <div class="form-group">
+                <label for="themeSelector">Theme</label>
+                <select id="themeSelector" name="theme">
+                    <option value="dark">Dark (Default)</option>
+                    <option value="light">Light</option>
+                    <option value="space-gray">Space Gray</option>
+                    <option value="silver">Silver</option>
+                    <option value="gold">Gold</option>
+                    <option value="midnight-green">Midnight Green</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="animationsToggle">Animations</label>
+                <select id="animationsToggle" name="animations">
+                    <option value="enabled">Enabled</option>
+                    <option value="disabled">Disabled</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="aveToggle">Audiovisual pulse (beta)</label>
+                <select id="aveToggle" name="ave">
+                    <option value="off">Off</option>
+                    <option value="on">On (subtle)</option>
+                </select>
+                <p class="field-hint field-hint--warn">Photosensitive epilepsy: do not enable if you are sensitive to flickering light.</p>
+            </div>
+        </section>
+        
+        <section id="playerSection" class="glass-section">
+            <h2 class="panel-title">Session</h2>
+
+            <p class="section-label">Guided protocol</p>
+            <div class="form-group">
+                <label for="sessionProtocol">Session protocol</label>
+                <select id="sessionProtocol">
+                    <option value="none">Manual (custom settings)</option>
+                    <option value="anxietyReset">Anxiety Reset · 15 min</option>
+                    <option value="sleepOnset">Sleep Onset · 35 min</option>
+                    <option value="focusSprint">Focus Sprint · 25 min</option>
+                    <option value="coherenceBreath">Coherence Breath · 10 min</option>
+                    <option value="blsCalm">Calm Down (BLS) · 10 min</option>
+                    <option value="deepSleep">Deep Sleep · 45 min</option>
+                    <option value="focusStudy">Focus / Study · 30 min</option>
+                    <option value="windDown">Wind Down · 20 min</option>
+                    <option value="boxBreath">Box Breath · 10 min</option>
+                </select>
+                <p id="protocolHint" class="field-hint" aria-live="polite"></p>
+                <p id="protocolEvidence" class="evidence-badge hidden" aria-live="polite"></p>
+            </div>
+
+            <p class="section-label">Check-in</p>
+            <div class="form-group mood-row">
+                <label for="moodBefore">Calm before (1–5)</label>
+                <input type="range" id="moodBefore" min="1" max="5" value="3">
+                <span id="moodBeforeDisplay" class="stress-display">3</span>
+            </div>
+            <div class="form-group mood-row">
+                <label for="moodAfter">Calm after (1–5)</label>
+                <input type="range" id="moodAfter" min="1" max="5" value="3" disabled>
+                <span id="moodAfterDisplay" class="stress-display">3</span>
+            </div>
+
+            <p class="section-label">How you feel</p>
+            <div class="form-group">
+                <label for="stressLevel">Stress level (1–10)</label>
+                <input type="range" id="stressLevel" min="1" max="10" value="5">
+                <span id="stressDisplay" class="stress-display">5</span>
+            </div>
+
+            <div class="form-group">
+                <label for="duration">Duration (minutes)</label>
+                <input type="number" id="duration" min="1" max="60" value="10">
+            </div>
+
+            <p class="section-label">Background</p>
+            <div class="form-group">
+                <label for="ambientSound">Ambient sound</label>
+                <select id="ambientSound">
+                    <option value="none">None</option>
+                    <optgroup label="Rain">
+                        <option value="rain">Rain · Terrace</option>
+                        <option value="rain-heavy">Rain · Heavy + thunder</option>
+                        <option value="rain-tent">Rain · Tent</option>
+                        <option value="rain-concrete">Rain · Concrete drops</option>
+                    </optgroup>
+                    <optgroup label="Ocean">
+                        <option value="ocean">Ocean · Atlantic waves</option>
+                        <option value="ocean-calm">Ocean · Calm surf</option>
+                        <option value="ocean-dellec">Ocean · Dellec beach</option>
+                        <option value="ocean-terns">Ocean · Waves + terns</option>
+                    </optgroup>
+                    <optgroup label="Forest">
+                        <option value="forest">Forest · Birds + wind</option>
+                        <option value="forest-stream">Forest · Stream + birds</option>
+                    </optgroup>
+                    <optgroup label="Sleep">
+                        <option value="fireplace">Fireplace · Crackling</option>
+                        <option value="night-crickets">Night · Crickets</option>
+                    </optgroup>
+                    <optgroup label="Wind">
+                        <option value="wind-grass">Wind · Tall grass</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <p class="section-label">Sound & visualization</p>
+            <div class="form-group">
+                <label for="soundType">Sound type</label>
+                <select id="soundType">
+                    <optgroup label="Binaural beats">
+                        <option value="binauralRelax">Binaural · Relaxation</option>
+                        <option value="binauralFocus">Binaural · Focus</option>
+                        <option value="binauralSleep">Binaural · Sleep</option>
+                    </optgroup>
+                    <optgroup label="Isochronic tones">
+                        <option value="isochronicEnergy">Isochronic · Energy</option>
+                        <option value="isochronicMeditate">Isochronic · Meditation</option>
+                        <option value="isochronicSleep">Isochronic · Sleep</option>
+                    </optgroup>
+                    <optgroup label="Noise & nature">
+                        <option value="pinkNoise">Pink noise · Deep sleep</option>
+                        <option value="whiteNoise">White noise · Focus</option>
+                        <option value="brownNoise">Brown noise · Sleep</option>
+                        <option value="nature">Nature · Enhanced</option>
+                    </optgroup>
+                    <optgroup label="Tones & rhythms">
+                        <option value="solfeggio">Solfeggio frequencies</option>
+                        <option value="monaural">Monaural beats</option>
+                        <option value="gamma">Gamma waves</option>
+                        <option value="hrv">HRV coherence</option>
+                    </optgroup>
+                    <optgroup label="Therapeutic (wellness)">
+                        <option value="emdrBls">Bilateral stimulation (BLS)</option>
+                    </optgroup>
+                    <optgroup label="Immersive">
+                        <option value="soundBath">Sound bath</option>
+                        <option value="psychoacoustic">Psychoacoustic mood</option>
+                        <option value="neuroacoustic">Neuroacoustic</option>
+                    </optgroup>
+                </select>
+                <p id="soundTypeHint" class="field-hint" aria-live="polite"></p>
+                <p id="freqDisplay" class="field-hint field-hint--mono" aria-live="polite"></p>
+            </div>
+
+            <div class="form-group">
+                <label for="visualizerType">Visualizer</label>
+                <select id="visualizerType">
+                    <option value="particles" selected>Particles</option>
+                    <option value="meshWave">3D mesh wave</option>
+                    <option value="spectrum">Frequency spectrum</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="volumeSlider">Volume</label>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+
+            <div class="form-group session-actions">
+                <button type="button" id="saveFavoriteBtn" class="btn btn--secondary btn--small">Save favorite</button>
+            </div>
+
+            <div class="playback-block">
+                <button type="button" id="generateButton" class="btn btn--primary">Generate track</button>
+                <div class="player-controls">
+                    <button type="button" id="playButton" class="btn btn--secondary" disabled>Play</button>
+                    <button type="button" id="stopButton" class="btn btn--secondary" disabled>Stop</button>
+                    <div id="spatialIndicator" class="spatial-indicator hidden">
+                        <span class="left-channel">L</span>
+                        <span class="right-channel">R</span>
+                    </div>
+                </div>
+                <div id="trackInfo" class="track-info"></div>
+            </div>
+        </section>
+
+        <section id="breathPacerSection" class="glass-section breath-pacer-section hidden" aria-label="Breathing guide">
+            <h2 class="panel-title">Breath guide</h2>
+            <div class="breath-pacer">
+                <div id="breathOrb" class="breath-orb" aria-hidden="true"></div>
+                <p id="breathLabel" class="breath-label">Inhale</p>
+                <p class="field-hint">Coherent breathing · 4s in · 6s out (~6 breaths/min)</p>
+            </div>
+        </section>
+        
+        <section id="visualizerContainer" class="glass-section viz-panel">
+            <h2 class="panel-title viz-panel__title">Visualization</h2>
+            <div class="viz-panel__stage">
+                <div id="aveOverlay" class="ave-overlay hidden" aria-hidden="true"></div>
+                <canvas id="visualizerCanvas"></canvas>
+            </div>
+        </section>
+
+        <section id="sessionHistorySection" class="glass-section">
+            <details class="about-details">
+                <summary class="about-details__summary">Session history</summary>
+                <ul id="sessionHistoryList" class="session-history-list"></ul>
+            </details>
+        </section>
+        
+        <section id="info" class="glass-section">
+            <details class="about-details">
+                <summary class="about-details__summary">About these sound types</summary>
+                <div class="about-details__content">
+                    <h2 class="about-details__heading">CalmMind sound technologies</h2>
+                    <p class="wellness-disclaimer">CalmMind is a wellness tool, not a medical device. Bilateral stimulation mode supports self-regulation only and is not a substitute for clinical EMDR or therapy.</p>
+                    <p>CalmMind uses audio approaches to support relaxation, focus, and mental wellbeing:</p>
+                    <ul class="sound-info-list">
+                        <li><strong>Binaural Beats:</strong> Two slightly different frequencies in each ear; best with headphones. <span class="evidence-inline evidence--strong">Strong evidence</span> for anxiety/stress in clinical settings.</li>
+                        <li><strong>Isochronic Tones:</strong> Pulsed single tones; effective without headphones. <span class="evidence-inline evidence--moderate">Moderate evidence</span></li>
+                        <li><strong>Pink Noise:</strong> Masks disruptive sounds; use timed sessions. <span class="evidence-inline evidence--moderate">Mixed evidence</span></li>
+                        <li><strong>Nature Sounds:</strong> CC0 field recordings (rain, ocean, forest).</li>
+                        <li><strong>HRV Coherence:</strong> ~0.1 Hz breathing with visual pacer. <span class="evidence-inline evidence--strong">Strong evidence</span></li>
+                        <li><strong>Bilateral Stimulation (BLS):</strong> Alternating L/R tones for calm — not clinical EMDR.</li>
+                        <li><strong>Solfeggio:</strong> Traditional tone sets. <span class="evidence-inline evidence--wellness">Wellness tradition</span></li>
+                    </ul>
+                    <p class="tip"><strong>Tip:</strong> Use guided protocols for research-informed parameter sets. Nature ambience © BigSoundBank (CC0) — see <code>assets/audio/ATTRIBUTION.md</code>.</p>
+                </div>
+            </details>
+        </section>
+        
+        <footer>
+            <p>&copy; 2026 CalmMind. All rights reserved.</p>
+        </footer>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script type="module" src="client/js/src-bridge.js"></script>
+    <script src="client/js/ambient-loader.js"></script>
+    <script src="client/js/breath-patterns.js"></script>
+    <script src="client/js/protocols.js"></script>
+    <script src="client/js/frequency-scheduler.js"></script>
+    <script src="client/js/emdr-audio.js"></script>
+    <script src="client/js/state-manager.js"></script>
+    <script src="client/js/audio.js"></script>
+    <script src="client/js/audio-reactive-bridge.js"></script>
+    <script src="client/js/visualizer.js"></script>
+    <script src="client/js/app.js"></script>
+</body>
+</html>

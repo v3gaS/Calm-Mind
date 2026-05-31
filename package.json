@@ -2,7 +2,7 @@
   "name": "audiotistic-application",
   "version": "1.0.0",
   "private": true,
-  "description": "CalmMind — Web Audio relaxation SPA with Three.js visualization (Audiotistic application)",
+  "description": "CalmMind — Web Audio relaxation SPA with canvas visualizers (Audiotistic application)",
   "main": "server.js",
   "repository": {
     "type": "git",
@@ -16,6 +16,7 @@
     "launch": "node launch.cjs",
     "start": "node server.js",
     "dev": "node server.js",
+    "capture:promo": "node scripts/capture-app-promo.mjs",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -28,13 +29,19 @@
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": [
     "web-audio",
     "binaural-beats",
+    "isochronic-tones",
     "visualization",
-    "three-js",
-    "wellness"
+    "canvas",
+    "wellness",
+    "relaxation",
+    "emdr-inspired"
   ],
-  "author": "v3gaS",
-  "license": "MIT"
+  "author": "John Valachovic",
+  "license": "SEE LICENSE IN LICENSE"
 }

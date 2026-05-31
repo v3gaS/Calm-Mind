@@ -672,3 +672,135 @@ body.animations-disabled *::after {
     padding: 0.7rem 1rem;
   }
 }
+
+/* —— Research plan UI —— */
+.headphones-hint {
+  padding: 0.65rem 1rem;
+  border-radius: var(--border-radius-md);
+  background: rgba(34, 211, 238, 0.12);
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.headphones-hint.hidden {
+  display: none;
+}
+
+.evidence-badge,
+.evidence-inline {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  margin-top: 0.35rem;
+}
+
+.evidence--strong { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+.evidence--moderate { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+.evidence--emerging { background: rgba(251, 191, 36, 0.2); color: #fcd34d; }
+.evidence--wellness { background: rgba(167, 139, 250, 0.2); color: #c4b5fd; }
+
+.field-hint--warn {
+  color: #fbbf24;
+  margin-top: 0.35rem;
+}
+
+.field-hint--mono {
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+}
+
+.wellness-disclaimer {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.65rem;
+  border-left: 3px solid var(--color-accent-primary);
+}
+
+.mood-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.session-actions {
+  margin-top: 0.25rem;
+}
+
+.btn--small {
+  font-size: 0.8rem;
+  padding: 0.45rem 0.75rem;
+}
+
+.breath-pacer-section.hidden {
+  display: none;
+}
+
+.breath-pacer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+}
+
+.breath-orb {
+  width: 7rem;
+  height: 7rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fcd34d, #f59e0b);
+  box-shadow: 0 0 40px rgba(251, 191, 36, 0.35);
+  transition: transform 4s ease-in-out, background 0.6s ease;
+  transform: scale(1);
+}
+
+.breath-orb--exhale {
+  transform: scale(0.72);
+  background: radial-gradient(circle at 30% 30%, #67e8f9, #0891b2);
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.3);
+}
+
+.breath-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.ave-overlay {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s linear;
+  z-index: 2;
+  border-radius: inherit;
+}
+
+.ave-overlay.hidden {
+  display: none;
+}
+
+.viz-panel__stage {
+  position: relative;
+}
+
+.session-history-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.session-history-list li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.session-history-empty {
+  font-style: italic;
+}

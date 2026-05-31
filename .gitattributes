@@ -1,0 +1,11 @@
+# Binary media — exclude from language stats; keep line endings untouched
+*.ogg binary linguist-generated=true
+*.gif binary linguist-generated=true
+*.jpg binary linguist-generated=true
+*.jpeg binary linguist-generated=true
+*.png binary linguist-generated=true
+*.svg binary linguist-generated=true
+
+# Shell scripts
+*.command text eol=lf
+*.sh text eol=lf

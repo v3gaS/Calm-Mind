@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CalmMind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#06060f;
+    --ink:#eef0ff;
+    --muted:#9092b8;
+    --faint:#5a5c82;
+    --violet:#8b5cf6;
+    --cyan:#22d3ee;
+    --glass:rgba(17,18,38,0.46);
+    --glass-solid:rgba(13,14,30,0.82);
+    --hair:rgba(150,160,255,0.12);
+    --hair-strong:rgba(150,170,255,0.28);
+    --grad:linear-gradient(120deg,#a78bfa,#22d3ee);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:'Manrope',system-ui,sans-serif;background:var(--bg);color:var(--ink);
+    overflow:hidden;-webkit-font-smoothing:antialiased;}
+  button{font-family:inherit;cursor:pointer;}
+  .nebula{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(44% 48% at 50% 50%, rgba(120,90,230,0.18), transparent 68%),
+      radial-gradient(70% 70% at 50% 50%, rgba(8,8,22,0.0), rgba(3,3,10,0.93) 100%);}
+  canvas#viz{position:fixed;inset:0;width:100vw;height:100vh;z-index:1;display:block;}
+  .grain{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0.045;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .vignette{position:fixed;inset:0;z-index:2;pointer-events:none;box-shadow:inset 0 0 240px 60px rgba(0,0,0,0.66);}
+
+  .ui{position:fixed;inset:0;z-index:5;pointer-events:none;}
+  .ui > *{pointer-events:auto;}
+
+  /* ---------- top bar ---------- */
+  .topbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;
+    padding:24px 32px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .mark svg{width:30px;height:30px;display:block;filter:drop-shadow(0 0 9px rgba(34,211,238,.55));}
+  .wordmark{font-family:'Bricolage Grotesque';font-weight:600;font-size:20px;letter-spacing:-.02em;}
+  .wordmark b{color:var(--cyan);font-weight:600;}
+  .status{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.05em;
+    color:var(--muted);background:var(--glass);border:1px solid var(--hair);padding:8px 13px;border-radius:999px;backdrop-filter:blur(14px);}
+  .status .dot{width:6px;height:6px;border-radius:50%;background:var(--faint);}
+  #app.state-playing .status .dot{background:var(--cyan);box-shadow:0 0 8px var(--cyan);animation:blink 2.6s infinite;}
+  @keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+
+  /* ---------- generic glass ---------- */
+  .panel{background:var(--glass);border:1px solid var(--hair);backdrop-filter:blur(16px);border-radius:20px;}
+  .lab{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--faint);text-transform:uppercase;}
+
+  /* ---------- SETUP (compose) ---------- */
+  .compose{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(540px,92vw);
+    padding:30px 30px 26px;}
+  #app.state-playing .compose{opacity:0;transform:translate(-50%,-46%) scale(.98);pointer-events:none;}
+  .compose h2{font-family:'Bricolage Grotesque';font-weight:600;font-size:23px;letter-spacing:-.01em;}
+  .compose .sub{color:var(--muted);font-size:13px;margin-top:4px;margin-bottom:20px;}
+  .field{margin-top:18px;}
+  .field > .lab{display:block;margin-bottom:9px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+  /* slider */
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:rgba(255,255,255,.1);outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;
+    background:#fff;cursor:pointer;box-shadow:0 0 0 4px rgba(139,92,246,.35),0 0 12px rgba(34,211,238,.6);}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border:none;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 0 0 4px rgba(139,92,246,.35);}
+  .slabel{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;}
+  .slabel .v{font-family:'Bricolage Grotesque';font-size:20px;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .slabel .t{font-size:11.5px;color:var(--muted);}
+
+  /* select */
+  .sel{position:relative;}
+  select{appearance:none;-webkit-appearance:none;width:100%;background:rgba(7,8,18,.7);color:var(--ink);
+    border:1px solid var(--hair);border-radius:12px;padding:12px 38px 12px 14px;font-size:13.5px;font-family:inherit;
+    cursor:pointer;outline:none;}
+  select:focus{border-color:var(--hair-strong);}
+  .sel::after{content:"";position:absolute;right:15px;top:50%;width:8px;height:8px;border-right:1.6px solid var(--muted);
+    border-bottom:1.6px solid var(--muted);transform:translateY(-65%) rotate(45deg);pointer-events:none;}
+  .hint{font-size:11.5px;color:var(--faint);line-height:1.5;margin-top:9px;min-height:17px;}
+  .hint .hp{color:var(--cyan);}
+
+  /* visualizer segmented */
+  .seg{display:flex;gap:6px;background:rgba(7,8,18,.6);border:1px solid var(--hair);border-radius:13px;padding:5px;}
+  .seg button{flex:1;border:none;background:transparent;color:var(--muted);font-size:12.5px;font-weight:600;
+    padding:9px 6px;border-radius:9px;transition:.2s;}
+  .seg button.on{background:var(--grad);color:#0a0a16;}
+  .seg button:not(.on):hover{color:var(--ink);}
+
+  /* preset chips */
+  .presets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .preset{border:1px solid var(--hair);background:rgba(255,255,255,.03);color:var(--muted);border-radius:12px;
+    padding:10px 12px;font-size:12.5px;font-weight:600;transition:.2s;display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:left;overflow:hidden;}
+  .preset > span:first-child{white-space:nowrap;}
+  .preset .ps{font-weight:400;font-size:10px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+  .preset:hover{color:var(--ink);border-color:var(--hair-strong);}
+  .preset.on{background:linear-gradient(95deg,rgba(167,139,250,.22),rgba(34,211,238,.18));border-color:var(--hair-strong);color:var(--ink);}
+  .preset.on .ps{color:var(--cyan);}
+
+  .gen{margin-top:24px;width:100%;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:700;
+    color:#fff;background:linear-gradient(150deg,#8b5cf6,#6d28d9 55%,#0891b2);
+    box-shadow:0 14px 36px -10px rgba(124,58,237,.6),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .2s,box-shadow .2s;
+    display:flex;align-items:center;justify-content:center;gap:10px;}
+  .gen:hover{transform:translateY(-2px);box-shadow:0 20px 46px -10px rgba(124,58,237,.7);}
+  .gen svg{width:18px;height:18px;}
+
+  /* ---------- PLAYING chrome ---------- */
+  .edge{opacity:0;}
+  #app.state-playing .edge{opacity:1;}
+  #app:not(.state-playing) .edge{pointer-events:none;}
+
+  .panel-left{position:absolute;left:32px;top:50%;transform:translateY(-50%);width:236px;padding:20px;}
+  .band{display:flex;align-items:baseline;gap:8px;margin-top:9px;}
+  .band .name{font-family:'Bricolage Grotesque';font-size:27px;font-weight:600;
+    background:linear-gradient(95deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .band .hz{font-family:'JetBrains Mono';font-size:12px;color:var(--cyan);}
+  .bdesc{font-size:12px;line-height:1.55;color:var(--muted);margin-top:8px;}
+  .meters{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
+  .meter{display:flex;align-items:center;gap:9px;}
+  .meter .ml{font-family:'JetBrains Mono';font-size:9.5px;letter-spacing:.1em;color:var(--faint);width:42px;}
+  .meter .track{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden;}
+  .meter .fill{height:100%;border-radius:2px;background:var(--grad);transition:width .9s cubic-bezier(.2,.7,.3,1);}
+  .amprow{margin-top:16px;}
+  .amprow .track{height:5px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:7px;}
+  .amprow .afill{height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));width:0%;}
+
+  .panel-right{position:absolute;right:32px;top:50%;transform:translateY(-50%);width:218px;padding:20px;}
+  .ears{display:flex;align-items:center;justify-content:space-between;margin-top:14px;}
+  .ear{text-align:center;flex:1;}
+  .ear .ring{width:54px;height:54px;border-radius:50%;margin:0 auto 8px;display:grid;place-items:center;border:1.5px solid var(--hair-strong);transition:box-shadow .3s;}
+  .ear .ring span{font-family:'Bricolage Grotesque';font-weight:600;font-size:18px;}
+  .ear.l .ring{box-shadow:0 0 16px rgba(139,92,246,.35);border-color:rgba(139,92,246,.55);}
+  .ear.r .ring{box-shadow:0 0 16px rgba(34,211,238,.35);border-color:rgba(34,211,238,.55);}
+  .ear .freq{font-family:'JetBrains Mono';font-size:11px;color:var(--muted);}
+  .ear .freq b{color:var(--ink);font-weight:500;}
+  .beatline{text-align:center;margin-top:13px;font-family:'JetBrains Mono';font-size:11px;color:var(--faint);}
+  .beatline b{color:var(--cyan);}
+  .binnote{text-align:center;font-size:10.5px;color:var(--faint);margin-top:6px;line-height:1.4;}
+
+  .timeline{margin-top:18px;border-top:1px solid var(--hair);padding-top:15px;}
+  .tl-track{position:relative;height:30px;margin-top:11px;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.04);display:flex;}
+  .tl-phase{height:100%;border-right:1px solid rgba(7,8,18,.7);position:relative;display:flex;align-items:center;justify-content:center;}
+  .tl-phase:last-child{border-right:none;}
+  .tl-phase span{font-family:'JetBrains Mono';font-size:9px;color:rgba(255,255,255,.8);}
+  .tl-prog{position:absolute;top:0;bottom:0;left:0;width:2px;background:#fff;box-shadow:0 0 8px #fff;z-index:2;}
+  .tl-empty{font-size:11px;color:var(--faint);margin-top:8px;}
+
+  /* breath cue */
+  .breathcue{position:absolute;left:50%;top:118px;transform:translateX(-50%);text-align:center;opacity:0;}
+  #app.state-playing .breathcue.show{opacity:1;}
+  .breathcue .word{font-family:'Bricolage Grotesque';font-weight:500;font-size:17px;color:#bdf5e3;}
+  .breathcue .sub{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.18em;color:var(--faint);text-transform:uppercase;margin-top:5px;}
+
+  /* dock */
+  .dock{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);display:flex;align-items:center;gap:16px;
+    padding:13px 16px;max-width:94vw;}
+  .tbtn{width:54px;height:54px;border-radius:50%;border:none;display:grid;place-items:center;color:#fff;flex:none;
+    background:linear-gradient(150deg,var(--violet),#6d28d9 60%,#0891b2);box-shadow:0 0 22px rgba(124,58,237,.5),inset 0 1px 0 rgba(255,255,255,.3);transition:transform .2s;}
+  .tbtn:hover{transform:scale(1.05);}
+  .tbtn svg{width:20px;height:20px;}
+  .tbtn.ghost{width:44px;height:44px;background:rgba(255,255,255,.05);border:1px solid var(--hair);box-shadow:none;color:var(--muted);}
+  .tbtn.ghost:hover{color:var(--ink);border-color:var(--hair-strong);}
+  .tbtn.ghost svg{width:16px;height:16px;}
+  .dock-mid{display:flex;flex-direction:column;gap:7px;width:280px;}
+  .nowplay{font-size:13px;font-weight:600;display:flex;gap:6px;align-items:baseline;white-space:nowrap;overflow:hidden;}
+  .nowplay #nowTitle{overflow:hidden;text-overflow:ellipsis;}
+  .nowplay .sub{font-weight:400;color:var(--muted);font-size:12px;flex:none;}
+  .scrub{height:4px;border-radius:3px;background:rgba(255,255,255,.09);position:relative;cursor:pointer;}
+  .scrub .done{position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--grad);border-radius:3px;}
+  .scrub .knob{position:absolute;left:0%;top:50%;width:10px;height:10px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 9px var(--cyan);}
+  .timecode{display:flex;justify-content:space-between;font-family:'JetBrains Mono';font-size:10px;color:var(--faint);}
+  .dock-right{display:flex;align-items:center;gap:14px;border-left:1px solid var(--hair);padding-left:16px;}
+  .vol{display:flex;align-items:center;gap:8px;width:120px;}
+  .vol svg{width:16px;height:16px;color:var(--muted);flex:none;}
+  .miniseg{display:flex;gap:4px;background:rgba(7,8,18,.6);border:1px solid var(--hair);border-radius:11px;padding:4px;}
+  .miniseg button{border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:600;padding:6px 9px;border-radius:8px;transition:.2s;}
+  .miniseg button.on{background:var(--grad);color:#0a0a16;}
+
+  @media (max-width:1080px){
+    .panel-left,.panel-right{display:none;}
+    .breathcue{top:96px;}
+  }
+  @media (max-width:760px){
+    .dock{flex-wrap:wrap;justify-content:center;gap:12px;bottom:16px;}
+    .dock-right{border-left:none;padding-left:0;width:100%;justify-content:center;}
+    .dock-mid{min-width:200px;order:-1;}
+    .compose{padding:24px 20px;}
+    .row2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div id="app" class="state-setup">
+  <div class="nebula"></div>
+  <canvas id="viz"></canvas>
+  <div class="grain"></div>
+  <div class="vignette"></div>
+
+  <div class="ui">
+    <!-- top bar -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="mark">
+          <svg viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="13" stroke="url(#g1)" stroke-width="1.4"/>
+            <path d="M16 4c-4 4-4 9-1 12s3 8-1 12M16 4c4 4 4 9 1 12s-3 8 1 12" stroke="url(#g1)" stroke-width="1.1" opacity=".8"/>
+            <circle cx="16" cy="16" r="3" fill="#67e8f9"/>
+            <defs><linearGradient id="g1" x1="3" y1="3" x2="29" y2="29"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+          </svg>
+        </div>
+        <div class="wordmark">calm<b>mind</b></div>
+      </div>
+      <div class="status"><span class="dot"></span><span id="statusText">READY</span></div>
+    </div>
+
+    <!-- SETUP -->
+    <div class="compose panel" id="setup">
+      <h2>Compose your session</h2>
+      <div class="sub">Tune the sound to how you feel — we'll synthesize a track to guide your mind there.</div>
+
+      <div class="field">
+        <span class="lab">How you feel · stress</span>
+        <input type="range" id="stress" min="1" max="10" step="1" value="5" />
+        <div class="slabel"><span class="v" id="stressVal">5</span><span class="t" id="stressLabel">Balanced</span></div>
+      </div>
+
+      <div class="field row2">
+        <div>
+          <span class="lab">Duration</span>
+          <input type="range" id="duration" min="1" max="60" step="1" value="10" style="margin-top:14px" />
+          <div class="slabel"><span class="v" id="durationVal">10<span style="font-size:12px"> min</span></span><span class="t">1–60</span></div>
+        </div>
+        <div>
+          <span class="lab">Ambient layer</span>
+          <div class="sel" style="margin-top:10px"><select id="ambient"></select></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="lab">Sound type</span>
+        <div class="sel"><select id="soundType"></select></div>
+        <div class="hint" id="soundHint"></div>
+      </div>
+
+      <div class="field">
+        <span class="lab">Visualizer</span>
+        <div class="seg" id="vizSeg">
+          <button data-viz="neural" class="on">Neural Bloom</button>
+          <button data-viz="tissue">Living Tissue</button>
+          <button data-viz="mandala">Mandala</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="lab">Guided recipes</span>
+        <div class="presets" id="presetRow" style="margin-top:10px"></div>
+      </div>
+
+      <button class="gen" id="generate">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Generate track
+      </button>
+    </div>
+
+    <!-- breath cue -->
+    <div class="breathcue" id="breathCue">
+      <div class="word" id="breathWord">Breathe in</div>
+      <div class="sub" id="breathSub">follow the bloom</div>
+    </div>
+
+    <!-- left: brain state -->
+    <div class="panel panel-left edge">
+      <span class="lab">Brain state</span>
+      <div class="band"><span class="name" id="bandName">Theta</span><span class="hz" id="bandHz">7.83 Hz</span></div>
+      <div class="bdesc" id="bandDesc"></div>
+      <div class="meters" id="meters">
+        <div class="meter"><span class="ml">DELTA</span><div class="track"><div class="fill" data-band="Delta"></div></div></div>
+        <div class="meter"><span class="ml">THETA</span><div class="track"><div class="fill" data-band="Theta"></div></div></div>
+        <div class="meter"><span class="ml">ALPHA</span><div class="track"><div class="fill" data-band="Alpha"></div></div></div>
+        <div class="meter"><span class="ml">BETA</span><div class="track"><div class="fill" data-band="Beta"></div></div></div>
+        <div class="meter"><span class="ml">GAMMA</span><div class="track"><div class="fill" data-band="Gamma"></div></div></div>
+      </div>
+      <div class="amprow"><span class="lab">Live signal</span><div class="track"><div class="afill" id="ampFill"></div></div></div>
+    </div>
+
+    <!-- right: binaural + timeline -->
+    <div class="panel panel-right edge">
+      <span class="lab">Binaural offset</span>
+      <div class="ears">
+        <div class="ear l"><div class="ring"><span>L</span></div><div class="freq"><b id="leftHz">200</b> Hz</div></div>
+        <div class="ear r"><div class="ring"><span>R</span></div><div class="freq"><b id="rightHz">207.8</b> Hz</div></div>
+      </div>
+      <div class="beatline">PERCEIVED BEAT · <b id="beatHz">7.83 Hz</b></div>
+      <div class="binnote" id="binNote"></div>
+      <div class="timeline">
+        <span class="lab">Session timeline</span>
+        <div class="tl-track" id="tlTrack"></div>
+        <div class="tl-empty" id="tlEmpty">Steady single-phase session.</div>
+      </div>
+    </div>
+
+    <!-- dock -->
+    <div class="dock panel edge">
+      <button class="tbtn" id="playBtn" aria-label="Play/Pause">
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6zM14 5v14h4V5z"/></svg>
+      </button>
+      <button class="tbtn ghost" id="stopBtn" aria-label="Stop">
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      </button>
+      <div class="dock-mid">
+        <div class="nowplay"><span id="nowTitle">Binaural · Relaxation</span><span class="sub" id="nowSub">· Level 5 · 10 min</span></div>
+        <div class="scrub" id="scrub"><div class="done" id="scrubDone"></div><div class="knob" id="scrubKnob"></div></div>
+        <div class="timecode"><span id="elapsed">00:00</span><span id="total">10:00</span></div>
+      </div>
+      <div class="dock-right">
+        <div class="vol">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9v6h4l5 5V4L9 9H5z"/></svg>
+          <input type="range" id="volume" min="0" max="100" step="1" value="60" />
+        </div>
+        <div class="miniseg" id="vizSeg2">
+          <button data-viz="neural" class="on">Neural</button>
+          <button data-viz="tissue">Tissue</button>
+          <button data-viz="mandala">Mandala</button>
+        </div>
+        <button class="tbtn ghost" id="editBtn" aria-label="Edit session" title="Edit session">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-4L16 5l4 4L8 21H4z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect width="100" height="100" fill="#0a0a1a"/>
+    <circle cx="50" cy="50" r="22" fill="none" stroke="#8b5cf6" stroke-width="2"/>
+    <circle cx="50" cy="50" r="6" fill="#22d3ee"/>
+  </svg>
+</template>
+
+<!--
+  DROP-IN INTEGRATION (CalmMind repo):
+  To drive the real audio engine + analyser, include the engine scripts BEFORE
+  the app scripts below (see docs/frontend-integration-reference.md):
+    <script src="client/js/ambient-loader.js"></script>
+    <script src="client/js/protocols.js"></script>
+    <script src="client/js/frequency-scheduler.js"></script>
+    <script src="client/js/emdr-audio.js"></script>
+    <script src="client/js/state-manager.js"></script>
+    <script src="client/js/audio.js"></script>
+    <script src="client/js/audio-reactive-bridge.js"></script>
+  When present, this UI auto-uses window.playGeneratedTrack + window.CalmMindAudioReactive
+  (live level/bass/mid/treble + session band/beat/elapsed). With none present it runs a
+  self-contained visual demo (no audio) — which is what you see in preview.
+-->
+<script src="app/visualizers.js"></script>
+<script src="app/app.js"></script>
+<script src="app/shell.js"></script>
+</body>
+</html>

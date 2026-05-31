@@ -1,401 +1,148 @@
-# Technical Architecture
+# CalmMind Technical Architecture
 
-## System Overview
+This document describes the **running CalmMind application** and how it relates to modular code under `src/`. For integrator APIs see [`integration/frontend-reference.md`](../integration/frontend-reference.md).
 
-This system provides comprehensive audio analysis and visualization capabilities. It processes audio input from various sources, performs spectral analysis, and renders visualizations in real-time. The architecture supports both 2D and 3D visualizations with a focus on performance, flexibility, and extensibility.
+## Dual-stack overview
 
-## Core Components
+CalmMind maintains two JavaScript layers:
 
-### Audio Processing Pipeline
+| Stack | Location | Runtime | Tests |
+|-------|----------|---------|-------|
+| **Shipped SPA** | `index.html`, `client/js/*` | Browser globals (`window.*`) | None (manual / browser) |
+| **Modular ES modules** | `src/*` | Jest + optional `src-bridge.js` import | `tests/*.test.js` (112 tests) |
+
+The shipped app does **not** call `EnhancedAudioManager` or protocol-layer generators (those live in [`archive/src-modular-unwired/`](../archive/src-modular-unwired/)). Only [`client/js/src-bridge.js`](../client/js/src-bridge.js) imports from active `src/` (visualizer config objects).
+
+```text
+index.html (Claude Design UI)
+  ├── client/css/design.css
+  ├── client/js/ambient-loader.js
+  ├── client/js/breath-patterns.js
+  ├── client/js/protocols.js
+  ├── client/js/frequency-scheduler.js
+  ├── client/js/emdr-audio.js
+  ├── client/js/state-manager.js
+  ├── client/js/audio.js
+  ├── client/js/audio-reactive-bridge.js
+  ├── client/js/calm-viz.js
+  ├── client/js/design-bridge.js
+  └── client/js/design-shell.js
+
+index-legacy.html (previous Three.js UI)
+  ├── Three.js r128 (CDN)
+  ├── client/js/src-bridge.js  →  src/visualization/configs/visualizerConfigs.js
+  ├── … (same audio stack as above)
+  ├── client/js/visualizer.js
+  └── client/js/app.js
 ```
-[Audio Input] → [Buffer Management] → [FFT Analysis] → [Feature Extraction] → [Visualization]
+
+Serve over **HTTP** (`npm run launch` or `npm run dev`). Web Audio and ES module loading fail or degrade under `file://`.
+
+## Shipped SPA
+
+### UI shell
+
+- **Entry:** [`index.html`](../index.html) — Claude Design UI; styles in [`client/css/design.css`](../client/css/design.css)
+- **Controller:** [`client/js/design-shell.js`](../client/js/design-shell.js) + [`client/js/design-bridge.js`](../client/js/design-bridge.js) (`window.CalmMind`)
+- **Legacy UI:** [`index-legacy.html`](../index-legacy.html) + [`client/js/app.js`](../client/js/app.js) + [`styles.css`](../styles.css)
+- **Persistence:** [`client/js/state-manager.js`](../client/js/state-manager.js) → `localStorage` key `calmMindState`
+- **Protocols:** [`client/js/protocols.js`](../client/js/protocols.js) — evidence-tagged presets applied before playback
+
+### Audio engine (shipped)
+
+[`client/js/audio.js`](../client/js/audio.js) owns the live Web Audio graph:
+
+```text
+User gesture → initAudio()
+  → AudioContext + masterGain → destination
+  → AnalyserNode (visualizer + CalmMindAudioReactive)
+  → Per-track generators (oscillators, noise, scheduled phases)
+  → AmbientLoader (looping .ogg buffers from assets/audio/ambient/)
 ```
 
-#### Buffer Management
-- Circular buffer implementation
-- Zero-copy operations where possible
-- Buffer pooling for memory efficiency
-- Configurable buffer sizes
-- Overflow protection
+Supporting modules:
 
-#### FFT Analysis
-- WebAssembly implementation
-- SIMD optimizations
-- Configurable window functions
-- Adjustable FFT sizes
-- Real-time processing
+| Module | Role |
+|--------|------|
+| `ambient-loader.js` | Fetch/cache CC0 `.ogg`, loop via `AudioBufferSourceNode` |
+| `breath-patterns.js` | HRV breath pattern definitions (`coherent`, `box`, `fourSevenEight`) |
+| `frequency-scheduler.js` | Multi-phase binaural beat/carrier automation |
+| `emdr-audio.js` | Alternating L/R bilateral tones |
 
-#### Feature Extraction
-- Spectral analysis
-- Temporal analysis
-- Feature vector generation
-- Statistical calculations
-- Pattern recognition
+**Public globals:** `initAudio`, `playGeneratedTrack`, `stopCurrentTrack`, `setVolume`, `getAnalyser`, `getAudioContext`, `getMasterGain`, `setPlayingState`.
 
-#### Visualization
-- Canvas-based rendering
-- WebGL acceleration
-- Configurable visualizations
-- Real-time updates
-- Interactive controls
-- 2D and 3D visualization options
-- Factory pattern for visualization type selection
+### Visualization (shipped)
 
-##### 2D Visualization
-- Standard canvas-based frequency and waveform displays
-- Customizable colors and styles
-- Performance-optimized rendering
+**Primary:** [`client/js/calm-viz.js`](../client/js/calm-viz.js) — procedural 2D canvas on `#viz` (`neural`, `tissue`, `mandala`). While audio is playing, motion is driven in real time from the master-bus `AnalyserNode` via `CalmMind.frame`; on the compose screen, motion is synthetic (breath-paced), not FFT-linked. Details: [`subsystems/visualization.md`](../subsystems/visualization.md).
 
-##### 3D Visualization
-- WebGL-based three-dimensional rendering
-- Immersive audio visualizations
-- Advanced shader effects
-- Dynamic camera controls
-- Real-time frequency mapping to 3D objects
+**Legacy:** [`client/js/visualizer.js`](../client/js/visualizer.js) — Three.js on `#visualizerCanvas` (`index-legacy.html` only).
 
-### Audio Processing Engine
+See [`subsystems/visualization.md`](../subsystems/visualization.md) and [`integration/claude-design-alignment.md`](../integration/claude-design-alignment.md).
 
-### Visualization System
-1. 2D rendering engine
-   - Canvas-based drawing
-   - SVG rendering (optional)
-   - WebGL accelerated 2D (for complex visualizations)
-2. 3D visualization engine
-   - WebGL-based renderer
-   - Three.js/custom WebGL implementation
-   - Shader programs for audio-reactive effects
-   - Dynamic mesh generation and manipulation
-   - Material system with customizable properties
-   - Scene graph for organizing visual elements
-   - Camera controls for perspective management
-3. Animation framework
-   - Timing synchronization with audio
-   - Keyframe interpolation
-   - Easing functions
-   - State transitions
-4. Visualization presets and templates
+### Audio-reactive bridge
 
-## Alternative Visualization Approaches
+[`client/js/audio-reactive-bridge.js`](../client/js/audio-reactive-bridge.js) exposes `window.CalmMindAudioReactive` — normalized spectral metrics for custom CSS/canvas/WebGL without a second audio graph. See [`integration/audio-reactive.md`](../integration/audio-reactive.md).
 
-### Virtual Reality (VR) Integration
-1. WebXR API integration for immersive audio visualization
-2. Spatial audio representation in VR space
-3. Interactive elements for VR controllers
-4. Performance considerations for high frame rate requirements
-5. Multi-user shared visualization experiences
+### Optional config bridge
 
-### Augmented Reality (AR) Extensions
-1. Camera-based placement of audio visualizations
-2. Environmental interactions with physical space
-3. QR code or marker-based initialization
-4. Mobile device optimizations
-5. Gesture recognition for AR interaction
+[`client/js/src-bridge.js`](../client/js/src-bridge.js) sets `window.CalmMindSrc` with `SOUND_TYPE_CONFIGS` and `VISUALIZER_CONFIGS` from modular `src/`. No other client script consumes this today; intended for external integrators.
 
-### Hybrid Rendering Approaches
-1. Server-side rendering for complex visualizations
-2. WebAssembly acceleration for computationally intensive operations
-3. Hybrid 2D/3D rendering pipelines
-4. Progressive enhancement based on device capabilities
-5. Fallback strategies for devices with limited GPU capabilities
+### Static assets
 
-## Data Flow
+- Ambient audio: [`assets/audio/ambient/`](../assets/audio/ambient/) (CC0, see [`assets/audio/ATTRIBUTION.md`](../assets/audio/ATTRIBUTION.md))
+- Branding: [`assets/branding/CalmMind_Logo.jpg`](../assets/branding/CalmMind_Logo.jpg)
+- Served as static files by [`server.js`](../server.js) / [`launch.cjs`](../launch.cjs)
 
-### Input Processing
-1. Audio capture via Web Audio API
-2. Buffer management and normalization
-3. Pre-processing (filtering, windowing)
-4. FFT computation
-5. Feature extraction
+## Modular `src/` (Jest-tested)
 
-### Output Generation
-1. Feature vector processing
-2. Visualization data preparation
-3. Render queue management
-4. Frame synchronization
-5. Display updates
+Used for unit tests and future bundling. Layout:
 
-### Visualization Data Flow
-1. Processed audio data from the analyzer is sent to the visualization engine
-2. For 2D visualizations:
-   - Frequency/amplitude data is mapped to visual elements
-   - Canvas context draws the visualization in real-time
-3. For 3D visualizations:
-   - Audio data is mapped to 3D mesh transformations
-   - WebGL shaders process vertex and fragment operations
-   - Scene graph updates geometry and material properties
-   - 3D camera perspective and rendering pipeline handles the final output
-4. Visualization settings control the appearance and behavior of visual elements
-5. User interactions trigger modifications to visualization parameters
+```text
+src/
+├── core/           AudioCore, AudioContext, EventBus, StateManager
+├── audio/          BufferPool, BaseSoundGenerator, BinauralBeats, noise generators, AudioEffects
+├── visualization/  VisualizerManager, setup.js, configManager, visualizerConfigs
+└── utils/          logger, ErrorHandler
+```
 
-### User Interaction Handling
-- User interactions trigger modifications to visualization parameters
+**Test coverage (representative):** `src/audio/*`, `src/core/AudioCore.js`, `src/visualization/setup.js`, `VisualizerManager.js`, `configManager.js`.
 
-### Alternative Visualization Data Flows
+**Archived (not in active tree):** Enhanced stack, `src/generators/`, effects, workers, `ThreeDVisualizer` — see [`archive/src-modular-unwired/`](../archive/src-modular-unwired/README.md).
 
-#### VR/AR Data Pipeline
-1. Audio source data → Spatial audio processor → 3D audio positioning
-2. User position/orientation tracking → WebXR pose system → Visualization adjustment
-3. Hand/controller tracking → Interaction system → Object manipulation
-4. Environment mapping → Scene integration → Realistic rendering
-5. Device capability data → Performance scaling system → Rendering quality selection
+## Archive policy
 
-#### Mobile Device Considerations
-1. Sensor data aggregation (accelerometer, gyroscope)
-2. Touch input processing specific to visualization navigation
-3. Battery-aware computation throttling
-4. Network condition adaptation for collaborative features
-5. Screen size/resolution adaptive rendering
+Orphan or superseded code lives under [`archive/`](../archive/README.md):
 
-#### Cross-Platform Data Synchronization
-1. Visualization state serialization format
-2. Real-time data synchronization protocol
-3. Conflict resolution strategies
-4. Bandwidth optimization techniques
-5. Session persistence mechanisms
+- `archive/js/` — legacy intermediate layer (superseded by `client/js/`)
+- `archive/src-interfaces/` — unwired alternate UI shell
+- `archive/src-core-experimental/` — broken/unused Analytics, PerformanceMonitor, duplicate ErrorHandler
+- `archive/src-modular-unwired/` — EnhancedAudioManager, generators, effects, workers, alt visualizers
+- `archive/design-prototype/` — pre-integration Claude Design export
+- `archive/assets/` — unused static images
 
-## Performance Optimization
+Archived trees are not loaded by `index.html` or Jest.
 
-### Web Workers
-- Dedicated audio processing worker
-- FFT computation worker
-- Feature extraction worker
-- Visualization worker
-- Worker pool management
+## Server
 
-### Caching Strategies
-- Buffer pooling
-- Object pooling
-- Garbage collection optimization
-- Memory usage monitoring
-- Resource cleanup
+[`server.js`](../server.js) and [`launch.cjs`](../launch.cjs) are static file servers from the repo root. Port 3000 by default, auto-increment to 3099 if busy. MIME types include `.ogg` for ambient playback.
 
-### Computation Optimization
-- SIMD operations
-- WebAssembly acceleration
-- Algorithm optimization
-- Cache utilization
-- Parallel processing
+## Data flow (playback session)
 
-#### Rendering Optimization
-- Canvas optimization techniques
-- WebGL acceleration
-- Buffered rendering
-- Frame rate management
-- WebGL shader optimizations for 3D visualizations
-- Level of detail (LOD) for complex 3D scenes
-- Texture compression for 3D models
-- Frustum culling for off-screen 3D elements
+```text
+app.js: user clicks Generate
+  → CalmMindProtocols.apply? (optional preset)
+  → playGeneratedTrack(stress, duration, ambient, soundType, vizType, options)
+  → audio.js: build graph, start ambient, schedule stop
+  → setupVisualizer(canvas, analyser, vizType)
+  → CalmMindAudioReactive (optional subscribe loop)
+  → CalmMindState.recordSession on stop
+```
 
-### 3D Rendering Optimization
-1. Level of Detail (LOD) management
-   - Dynamic reduction of geometry complexity based on camera distance
-   - Simplified shader programs for distant objects
-2. Instancing and batching
-   - GPU instancing for repetitive elements
-   - Draw call batching for similar materials
-3. Shader optimization
-   - Minimizing expensive calculations in fragment shaders
-   - Using vertex shaders for computations where possible
-   - Precision selection based on required accuracy
-4. Texture management
-   - Texture compression and mipmap generation
-   - Dynamic texture loading based on visibility
-5. Culling techniques
-   - Frustum culling for off-screen objects
-   - Occlusion culling for hidden geometry
-6. WebGL context optimization
-   - Minimizing state changes
-   - Proper buffer management and reuse
-   - WebGL2 features utilization where available
+## Related documentation
 
-### Specialized Visualization Optimizations
-
-#### VR/AR Optimization Techniques
-1. Foveated rendering for VR displays
-   - Higher detail rendering in the center of vision
-   - Reduced detail in peripheral areas
-2. WebXR session management
-   - Optimal handling of VR/AR context lifecycle
-   - Efficient pose tracking integration
-3. Spatial audio processing optimization
-   - Audio source prioritization based on spatial position
-   - Dynamic audio quality scaling
-4. Batched physics calculations for interactive elements
-5. Predictive rendering for reducing motion sickness
-
-#### WebAssembly Acceleration
-1. Audio processing routines compiled to WebAssembly
-2. Computation-heavy visualization algorithms
-3. Physics simulations for interactive visualizations
-4. Custom DSP operations
-5. Parallel computation patterns
-
-#### Progressive Enhancement
-1. Device capability detection system
-   - GPU feature detection
-   - Memory availability assessment
-   - CPU core availability detection
-2. Tiered rendering quality presets
-3. Dynamic feature enabling/disabling
-4. Graceful fallbacks for unsupported features
-5. Adaptive resource allocation based on device performance
-
-## Scalability
-
-### Horizontal Scaling
-- Worker-based parallelism
-- Load balancing
-- Resource allocation
-- Performance monitoring
-- Adaptive scaling
-
-### Vertical Scaling
-- CPU optimization
-- Memory optimization
-- I/O optimization
-- Cache optimization
-- Thread management
-
-## Security
-
-### Data Protection
-- Input validation
-- Output sanitization
-- Secure communication
-- Access control
-- Data encryption
-
-### Resource Protection
-- Rate limiting
-- Resource quotas
-- Error handling
-- Recovery procedures
-- Monitoring
-
-## Monitoring
-
-### Performance Metrics
-- Processing latency
-- Memory usage
-- CPU utilization
-- Frame rate
-- Buffer utilization
-
-### Health Checks
-- Worker status
-- Memory status
-- CPU status
-- Error rates
-- Resource availability
-
-## Error Handling
-
-### Error Types
-- Input errors
-- Processing errors
-- Resource errors
-- State errors
-- System errors
-
-### Recovery Procedures
-- Automatic recovery
-- Graceful degradation
-- Error reporting
-- State recovery
-- Resource cleanup
-
-## Configuration
-
-### System Parameters
-- Buffer sizes
-- FFT parameters
-- Worker counts
-- Memory limits
-- Performance thresholds
-
-### Runtime Configuration
-- Dynamic parameter adjustment
-- Feature toggles
-- Performance tuning
-- Resource allocation
-- Debug options
-
-## Dependencies
-
-### Core Dependencies
-- Web Audio API
-- Web Workers API
-- WebAssembly
-- Canvas API
-- WebGL
-- Three.js (for 3D visualizations)
-
-### External Libraries
-- FFT implementation
-- Visualization libraries
-- Utility libraries
-- Testing frameworks
-- Monitoring tools
-
-## Development Tools
-
-### Build System
-- Module bundling
-- Asset optimization
-- Code minification
-- Source maps
-- Development server
-
-### Testing Tools
-- Unit testing
-- Performance testing
-- Memory profiling
-- CPU profiling
-- Browser testing
-
-### Debugging Tools
-- Source maps
-- Console logging
-- Performance monitoring
-- Memory monitoring
-- Error tracking
-
-## Deployment
-
-### Requirements
-- Modern browser with WebGL 2.0 support
-- Web Audio API compatibility
-- HTML5 support
-- Minimum 4GB RAM recommended (8GB for complex 3D visualizations)
-- Dedicated GPU recommended for 3D visualization mode
-- Network bandwidth for audio streaming (if applicable)
-
-### Environment Setup
-- Development
-- Staging
-- Production
-- Testing
-- Monitoring
-
-### Deployment Process
-- Version control
-- Automated testing
-- Performance verification
-- Security checks
-- Documentation updates
-
-## Maintenance
-
-### Code Management
-- Version control
-- Code review
-- Documentation
-- Testing
-- Refactoring
-
-### System Maintenance
-- Performance tuning
-- Bug fixes
-- Security updates
-- Feature updates
-- Documentation updates 
+| Doc | Audience |
+|-----|----------|
+| [`integration/frontend-reference.md`](../integration/frontend-reference.md) | Full `window.*` contract |
+| [`guides/development.md`](../guides/development.md) | Conventions for this repo |
+| [`subsystems/audio.md`](../subsystems/audio.md) | Shipped audio + modular Enhanced stack |
+| [`architecture/modular-api.md`](modular-api.md) | Modular `src/` API examples |

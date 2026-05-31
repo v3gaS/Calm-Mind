@@ -30,7 +30,9 @@ Community leaders are responsible for clarifying and enforcing our standards of 
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to **John Valachovic** at [JValachovic@gmail.com](mailto:JValachovic@gmail.com) or via GitHub issues for non-sensitive reports. All complaints will be reviewed and investigated promptly and fairly.
+
+Do not include personal health information or secrets in conduct reports.
 
 ## Attribution
 

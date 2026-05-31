@@ -1,0 +1,34 @@
+name: Feature request
+description: Suggest an improvement (permission may be required to implement)
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Copyright © John Valachovic.** Implementation may require express permission ([LICENSE](../../LICENSE)).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or goal
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Audio / protocols
+        - Canvas visualizers
+        - UI / design
+        - Documentation
+        - Tests / src modules
+        - Other
+    validations:
+      required: true

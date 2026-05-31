@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CalmMind — Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#070710;
+    --panel:#0c0c18;
+    --ink:#edeefb;
+    --muted:#9092b8;
+    --faint:#5a5c82;
+    --line:rgba(150,160,255,0.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{min-height:100%;}
+  body{font-family:'Manrope',system-ui,sans-serif;background:
+      radial-gradient(120% 80% at 50% -10%, #11122a 0%, var(--bg) 55%);
+    color:var(--ink);-webkit-font-smoothing:antialiased;padding:48px 40px 80px;}
+
+  .head{max-width:1500px;margin:0 auto 38px;}
+  .kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.26em;
+    text-transform:uppercase;color:var(--faint);}
+  .head h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:clamp(28px,4vw,46px);
+    letter-spacing:-.02em;margin-top:12px;line-height:1.02;}
+  .head h1 .grad{background:linear-gradient(95deg,#c4b5fd,#67e8f9,#6ee7b7);-webkit-background-clip:text;
+    background-clip:text;color:transparent;}
+  .head p{max-width:680px;margin-top:14px;font-size:15px;line-height:1.6;color:var(--muted);}
+  .head .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;}
+  .chip{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.04em;color:var(--muted);
+    border:1px solid var(--line);border-radius:999px;padding:7px 13px;background:rgba(255,255,255,.02);}
+
+  .grid{max-width:1500px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:26px;}
+  @media (max-width:1180px){.grid{grid-template-columns:1fr;max-width:620px;}}
+
+  .tile{display:flex;flex-direction:column;}
+  .stage{position:relative;width:100%;aspect-ratio:4/3;border-radius:20px;overflow:hidden;
+    border:1px solid var(--line);background:#05050c;box-shadow:0 30px 60px -30px rgba(0,0,0,.8);
+    transition:transform .35s cubic-bezier(.2,.7,.3,1),box-shadow .35s,border-color .35s;}
+  .tile:hover .stage{transform:translateY(-4px);box-shadow:0 40px 80px -28px rgba(0,0,0,.9);border-color:rgba(150,170,255,.28);}
+  .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  .stage .ovl{position:absolute;inset:0;z-index:2;pointer-events:none;}
+  .stage .vig{position:absolute;inset:0;z-index:1;pointer-events:none;box-shadow:inset 0 0 110px 26px rgba(0,0,0,.62);}
+
+  /* mini chrome */
+  .mwm{position:absolute;top:16px;left:18px;display:flex;align-items:center;gap:9px;
+    font-family:'Bricolage Grotesque';font-weight:600;font-size:15px;letter-spacing:-.02em;}
+  .mwm .d{width:18px;height:18px;border-radius:50%;}
+  .mpill{position:absolute;top:16px;right:18px;font-family:'JetBrains Mono';font-size:9.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 10px;
+    background:rgba(8,8,20,.5);backdrop-filter:blur(8px);}
+  .mstate{position:absolute;left:18px;bottom:64px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.06em;color:var(--faint);}
+  .mstate b{font-family:'Bricolage Grotesque';font-size:18px;display:block;margin-top:2px;letter-spacing:0;}
+  .mdock{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;
+    background:rgba(10,10,22,.5);border:1px solid var(--line);border-radius:14px;padding:8px 10px;backdrop-filter:blur(10px);}
+  .mdock .pb{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;}
+  .mdock .pb svg{width:12px;height:12px;}
+  .mdock .bar{width:120px;height:3px;border-radius:2px;background:rgba(255,255,255,.1);position:relative;overflow:hidden;}
+  .mdock .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;}
+  .mdock .tc{font-family:'JetBrains Mono';font-size:9px;color:var(--faint);}
+
+  .caption{padding:20px 4px 0;}
+  .caption .row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
+  .caption h2{font-family:'Bricolage Grotesque';font-weight:600;font-size:21px;letter-spacing:-.01em;}
+  .caption .ltr{font-family:'JetBrains Mono';font-size:12px;color:var(--faint);}
+  .caption p{margin-top:9px;font-size:13.5px;line-height:1.55;color:var(--muted);}
+  .caption .feat{margin-top:11px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--faint);}
+  .open{margin-top:16px;display:inline-flex;align-items:center;gap:8px;align-self:flex-start;
+    font-family:'Manrope';font-weight:600;font-size:13px;color:var(--ink);text-decoration:none;
+    border:1px solid var(--line);border-radius:11px;padding:10px 15px;background:rgba(255,255,255,.03);
+    transition:.2s;}
+  .open:hover{border-color:rgba(150,170,255,.4);background:rgba(255,255,255,.07);gap:11px;}
+  .open svg{width:14px;height:14px;}
+
+  .foot{max-width:1500px;margin:46px auto 0;font-family:'JetBrains Mono';font-size:11px;
+    letter-spacing:.04em;color:var(--faint);text-align:center;}
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="kicker">CalmMind · Immersive redesign</div>
+    <h1>Three ways to make the mind <span class="grad">breathe</span>.</h1>
+    <p>Each direction is a single full-screen experience where a living visualizer dominates and the controls float over it.
+       The previews below are live — open any one full-screen to play, switch presets, and watch the brain-state readouts respond.
+       Tell me which visual language to build out completely; we can also mix elements across them.</p>
+    <div class="meta">
+      <span class="chip">Organic · bioluminescent</span>
+      <span class="chip">Visual prototype</span>
+      <span class="chip">Responsive</span>
+      <span class="chip">Brain-state · L/R binaural · presets · breath guide · timeline</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- A -->
+    <div class="tile">
+      <div class="stage">
+        <canvas data-viz="neural"></canvas>
+        <div class="vig"></div>
+        <div class="ovl">
+          <div class="mwm"><span class="d" style="background:linear-gradient(135deg,#8b5cf6,#22d3ee)"></span>calmmind</div>
+          <div class="mpill" style="color:#8be3ff">● Synthesizing</div>
+          <div class="mstate">Brain state<b style="color:#c4b5fd">Theta · 7.83 Hz</b></div>
+          <div class="mdock">
+            <span class="pb" style="background:linear-gradient(150deg,#8b5cf6,#0891b2)"><svg viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span>
+            <span class="bar"><i style="width:34%;background:linear-gradient(90deg,#8b5cf6,#22d3ee)"></i></span>
+            <span class="tc">03:24</span>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <div class="row"><h2>Neural Bloom</h2><span class="ltr">A</span></div>
+        <p>A breathing synapse-sphere — hundreds of nodes firing pulses across a rotating 3D web. Violet→cyan, lab-grade glass chrome. Reads as <em>“your brain, visualized.”</em></p>
+        <div class="feat">Neural network · brain-state meter</div>
+        <a class="open" href="directions/neural-bloom.html" target="_top">Open full experience
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </div>
+
+    <!-- B -->
+    <div class="tile">
+      <div class="stage">
+        <canvas data-viz="tissue"></canvas>
+        <div class="vig"></div>
+        <div class="ovl">
+          <div class="mwm"><span class="d" style="background:linear-gradient(135deg,#10b981,#38bdf8)"></span>calmmind</div>
+          <div class="mpill" style="color:#7ff0d2">● Resonating</div>
+          <div class="mstate">Coherence<b style="color:#6ee7b7">84 / 100 · high</b></div>
+          <div class="mdock">
+            <span class="pb" style="background:linear-gradient(150deg,#10b981,#0284c7)"><svg viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span>
+            <span class="bar"><i style="width:42%;background:linear-gradient(90deg,#10b981,#38bdf8)"></i></span>
+            <span class="tc">05:02</span>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <div class="row"><h2>Living Tissue</h2><span class="ltr">B</span></div>
+        <p>A bioluminescent deep-sea organism that inhales and exhales to pace your breath. Emerald/teal, soft frosted chrome, HRV-coherence framing. The calmest of the three.</p>
+        <div class="feat">Fluid blob · breath guide</div>
+        <a class="open" href="directions/living-tissue.html" target="_top">Open full experience
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </div>
+
+    <!-- C -->
+    <div class="tile">
+      <div class="stage">
+        <canvas data-viz="mandala"></canvas>
+        <div class="vig"></div>
+        <div class="ovl">
+          <div class="mwm"><span class="d" style="background:conic-gradient(from 200deg,#a78bfa,#22d3ee,#34d399,#a78bfa)"></span>calmmind</div>
+          <div class="mpill" style="color:#8be3ff">● Entraining</div>
+          <div class="mstate">Brain state<b style="color:#67e8f9">Gamma · 40 Hz</b></div>
+          <div class="mdock">
+            <span class="pb" style="background:conic-gradient(from 200deg,#a78bfa,#22d3ee,#34d399)"><svg viewBox="0 0 24 24" fill="#0b0a16"><path d="M8 5v14l11-7z"/></svg></span>
+            <span class="bar"><i style="width:28%;background:linear-gradient(90deg,#a78bfa,#22d3ee,#34d399)"></i></span>
+            <span class="tc">07:10</span>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <div class="row"><h2>Synaptic Mandala</h2><span class="ltr">C</span></div>
+        <p>A rotating sacred-geometry lattice ringed by a live frequency spectrum. Tri-color, hypnotic, ritual. Best for focus / gamma sessions and the most limit-pushing visually.</p>
+        <div class="feat">Mandala + spectrum · entrainment</div>
+        <a class="open" href="directions/synaptic-mandala.html" target="_top">Open full experience
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">Pick a direction — or mix — and I'll build it out with the full session flow, presets, timeline and breath guide.</div>
+
+<script>
+// ---------- shared canvas sizing ----------
+function fit(canvas){
+  const DPR=Math.min(window.devicePixelRatio||1,2);
+  const r=canvas.getBoundingClientRect();
+  const w=Math.max(1,r.width), h=Math.max(1,r.height);
+  canvas.width=w*DPR;canvas.height=h*DPR;
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  return {ctx,w,h};
+}
+
+// ---------- A: neural sphere ----------
+function vizNeural(canvas){
+  let S=fit(canvas);
+  const N=150,nodes=[];
+  for(let i=0;i<N;i++){const y=1-(i/(N-1))*2,r=Math.sqrt(1-y*y),phi=i*2.399963229;
+    nodes.push({x:Math.cos(phi)*r,y,z:Math.sin(phi)*r});}
+  const edges=[];
+  for(let i=0;i<N;i++){const a=nodes[i],d=[];
+    for(let j=0;j<N;j++){if(i===j)continue;const dx=a.x-nodes[j].x,dy=a.y-nodes[j].y,dz=a.z-nodes[j].z;d.push({j,dist:dx*dx+dy*dy+dz*dz});}
+    d.sort((p,q)=>p.dist-q.dist);for(let k=0;k<3;k++){const j=d[k].j;if(j>i)edges.push({a:i,b:j});}}
+  const pulses=[];
+  const lc=t=>{const a=[139,92,246],b=[34,211,238];return [a[0]+(b[0]-a[0])*t|0,a[1]+(b[1]-a[1])*t|0,a[2]+(b[2]-a[2])*t|0];};
+  let time=0;
+  function loop(){
+    const {ctx,w,h}=S;const cx=w/2,cy=h/2,R=Math.min(w,h)*0.34;
+    time+=0.016;ctx.clearRect(0,0,w,h);
+    const breath=0.5+0.5*Math.sin(time*0.45),scale=R*(0.9+breath*0.16);
+    const ay=time*0.16,ax=Math.sin(time*0.12)*0.35,cY=Math.cos(ay),sY=Math.sin(ay),cX=Math.cos(ax),sX=Math.sin(ax);
+    for(const n of nodes){let x1=n.x*cY-n.z*sY,z1=n.x*sY+n.z*cY,y1=n.y*cX-z1*sX,z2=n.y*sX+z1*cX;
+      n.sx=cx+x1*scale;n.sy=cy+y1*scale;n.sz=z2;const dp=(z2+1)/2;n.size=0.8+dp*2.4;n.alpha=0.4+dp*0.6;n.col=lc(dp);}
+    ctx.globalCompositeOperation='lighter';ctx.lineWidth=0.7;
+    for(const e of edges){const a=nodes[e.a],b=nodes[e.b],d=(a.sz+b.sz)/2,al=0.06+((d+1)/2)*0.2,c=lc((d+1)/2);
+      ctx.strokeStyle='rgba('+c[0]+','+c[1]+','+c[2]+','+al+')';ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.stroke();}
+    for(let i=pulses.length-1;i>=0;i--){const p=pulses[i];p.t+=p.sp;if(p.t>=1){pulses.splice(i,1);continue;}
+      const a=nodes[p.e.a],b=nodes[p.e.b],px=a.sx+(b.sx-a.sx)*p.t,py=a.sy+(b.sy-a.sy)*p.t;
+      const g=ctx.createRadialGradient(px,py,0,px,py,7);g.addColorStop(0,'rgba(180,240,255,.9)');g.addColorStop(1,'rgba(120,200,255,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,7,0,7);ctx.fill();}
+    for(const n of nodes){const c=n.col;const g=ctx.createRadialGradient(n.sx,n.sy,0,n.sx,n.sy,n.size*5);
+      g.addColorStop(0,'rgba('+c[0]+','+c[1]+','+c[2]+','+Math.min(1,n.alpha*1.3)+')');g.addColorStop(1,'rgba('+c[0]+','+c[1]+','+c[2]+',0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(n.sx,n.sy,n.size*5,0,7);ctx.fill();
+      ctx.fillStyle='rgba(245,253,255,'+Math.min(1,n.alpha+0.3)+')';ctx.beginPath();ctx.arc(n.sx,n.sy,n.size*0.95,0,7);ctx.fill();}
+    const coreR=scale*(0.85+breath*0.2),cg=ctx.createRadialGradient(cx,cy,0,cx,cy,coreR);
+    cg.addColorStop(0,'rgba(150,120,250,'+(0.26+breath*0.14)+')');cg.addColorStop(0.4,'rgba(34,211,238,'+(0.05+breath*0.05)+')');cg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx,cy,coreR,0,7);ctx.fill();
+    ctx.globalCompositeOperation='source-over';
+    if(Math.random()<0.4&&edges.length)pulses.push({e:edges[(Math.random()*edges.length)|0],t:0,sp:0.014+Math.random()*0.02});
+    requestAnimationFrame(loop);
+  }
+  loop();
+  return ()=>{S=fit(canvas);};
+}
+
+// ---------- B: fluid blob ----------
+function vizTissue(canvas){
+  let S=fit(canvas);
+  const motes=[];for(let i=0;i<46;i++){motes.push({a:Math.random()*7,r:Math.random(),sp:0.1+Math.random()*0.5,size:0.6+Math.random()*2,hue:Math.random(),ph:Math.random()*7});}
+  let time=0;
+  function blob(ctx,cx,cy,rad,wob,t,seed){const pts=56;ctx.beginPath();
+    for(let i=0;i<=pts;i++){const ang=(i/pts)*7;const r=rad*(1+wob*(Math.sin(ang*3+t*0.7+seed)*0.5+Math.sin(ang*5-t*0.5+seed*2)*0.3+Math.sin(ang*2+t*0.3)*0.2));
+      const x=cx+Math.cos(ang)*r,y=cy+Math.sin(ang)*r*0.92;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.closePath();}
+  function loop(){
+    const {ctx,w,h}=S;const cx=w/2,cy=h/2,baseR=Math.min(w,h)*0.26;time+=0.016;
+    ctx.clearRect(0,0,w,h);
+    const period=10.9,p=(time%period)/period,v=0.5-0.5*Math.cos(p*7),rad=baseR*(0.8+v*0.5),wob=0.1+(1-v)*0.05;
+    ctx.globalCompositeOperation='lighter';
+    for(let k=3;k>=1;k--){const g=ctx.createRadialGradient(cx,cy,rad*0.3,cx,cy,rad*(1.1+k*0.4));
+      g.addColorStop(0,'rgba(16,185,129,'+(0.05+v*0.04)+')');g.addColorStop(0.5,'rgba(45,212,191,0.03)');g.addColorStop(1,'rgba(2,16,12,0)');
+      ctx.fillStyle=g;blob(ctx,cx,cy,rad*(1.1+k*0.4),wob*0.7,time,k*3.1);ctx.fill();}
+    ctx.save();blob(ctx,cx,cy,rad,wob,time,0);ctx.clip();
+    const bg=ctx.createRadialGradient(cx,cy-rad*0.25,rad*0.1,cx,cy,rad*1.25);
+    bg.addColorStop(0,'rgba(110,243,200,0.55)');bg.addColorStop(0.4,'rgba(16,185,129,0.34)');bg.addColorStop(0.8,'rgba(13,90,120,0.3)');bg.addColorStop(1,'rgba(8,40,55,0.22)');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+    const cl=ctx.createRadialGradient(cx,cy-rad*0.6,0,cx,cy-rad*0.6,rad*1.1);
+    cl.addColorStop(0,'rgba(190,255,235,0.4)');cl.addColorStop(0.5,'rgba(120,230,255,0.06)');cl.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=cl;ctx.fillRect(0,0,w,h);
+    for(const m of motes){m.a+=m.sp*0.004;const rr=rad*0.92*Math.sqrt(m.r),x=cx+Math.cos(m.a)*rr,y=cy+Math.sin(m.a)*rr*0.92,tw=0.5+0.5*Math.sin(time*2+m.ph);
+      const col=m.hue<0.5?'180,255,225':'150,225,255';const g=ctx.createRadialGradient(x,y,0,x,y,m.size*5);
+      g.addColorStop(0,'rgba('+col+','+(0.5+tw*0.5)+')');g.addColorStop(1,'rgba('+col+',0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,m.size*5,0,7);ctx.fill();
+      ctx.fillStyle='rgba(240,255,250,'+(0.5+tw*0.4)+')';ctx.beginPath();ctx.arc(x,y,m.size*0.8,0,7);ctx.fill();}
+    ctx.restore();
+    blob(ctx,cx,cy,rad,wob,time,0);ctx.lineWidth=1.5;ctx.strokeStyle='rgba(120,255,220,0.4)';ctx.stroke();
+    ctx.globalCompositeOperation='source-over';
+    ctx.beginPath();ctx.arc(cx,cy,baseR*1.5,0,7);ctx.setLineDash([2,8]);ctx.strokeStyle='rgba(120,230,200,0.16)';ctx.lineWidth=1;ctx.stroke();ctx.setLineDash([]);
+    requestAnimationFrame(loop);
+  }
+  loop();
+  return ()=>{S=fit(canvas);};
+}
+
+// ---------- C: mandala ----------
+function vizMandala(canvas){
+  let S=fit(canvas);
+  const SYM=12;
+  function col(t,a){let r,g,b;if(t<0.5){const k=t/0.5;r=167+(34-167)*k;g=139+(211-139)*k;b=250+(238-250)*k;}else{const k=(t-0.5)/0.5;r=34+(52-34)*k;g=211;b=238+(153-238)*k;}return 'rgba('+(r|0)+','+(g|0)+','+(b|0)+','+a+')';}
+  let time=0;
+  function loop(){
+    const {ctx,w,h}=S;const cx=w/2,cy=h/2,R=Math.min(w,h)*0.34;time+=0.016;
+    ctx.clearRect(0,0,w,h);const breath=0.5+0.5*Math.sin(time*0.4),pulse=time*1.6;
+    ctx.globalCompositeOperation='lighter';
+    const bars=60;
+    for(let i=0;i<bars;i++){const ang=(i/bars)*7-1.5708;const seed=i%(bars/SYM);
+      const hh=(Math.sin(seed*0.8+time*3)*0.5+0.5)*0.55+(Math.sin(seed*0.37+time*1.7)*0.5+0.5)*0.45;
+      const inner=R*1.14,outer=inner+hh*R*0.3*(0.7+breath*0.5);
+      ctx.strokeStyle=col(i/bars,0.5);ctx.lineWidth=2;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(cx+Math.cos(ang)*inner,cy+Math.sin(ang)*inner);ctx.lineTo(cx+Math.cos(ang)*outer,cy+Math.sin(ang)*outer);ctx.stroke();}
+    const rings=[{n:SYM,rad:0.28,dir:1},{n:SYM*2,rad:0.52,dir:-1},{n:SYM*2,rad:0.78,dir:1},{n:SYM*3,rad:1.0,dir:-1}];
+    const pts=rings.map(()=>[]);
+    rings.forEach((ring,ri)=>{const rot=time*0.12*ring.dir;for(let i=0;i<ring.n;i++){const ang=(i/ring.n)*7+rot,rr=R*ring.rad*(0.96+breath*0.07);pts[ri].push({x:cx+Math.cos(ang)*rr,y:cy+Math.sin(ang)*rr});}});
+    ctx.lineWidth=0.8;
+    for(let ri=0;ri<rings.length-1;ri++){const a=pts[ri],b=pts[ri+1];
+      for(let i=0;i<b.length;i++){const src=a[i%a.length],dst=b[i],t=ri/(rings.length-1),wave=0.4+0.6*(0.5+0.5*Math.sin(pulse-ri*0.9));
+        ctx.strokeStyle=col(0.2+t*0.6,0.1+wave*0.16);ctx.beginPath();ctx.moveTo(src.x,src.y);ctx.lineTo(dst.x,dst.y);ctx.stroke();}}
+    rings.forEach((ring,ri)=>{const p=pts[ri];const t=ri/(rings.length-1),wave=0.5+0.5*Math.sin(pulse-ri*0.9);
+      for(const q of p){const sz=(1.2+t*2)*(0.7+wave*0.7);const g=ctx.createRadialGradient(q.x,q.y,0,q.x,q.y,sz*5);
+        g.addColorStop(0,col(0.15+t*0.7,0.9));g.addColorStop(1,col(0.15+t*0.7,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(q.x,q.y,sz*5,0,7);ctx.fill();
+        ctx.fillStyle='rgba(245,250,255,0.95)';ctx.beginPath();ctx.arc(q.x,q.y,sz*0.7,0,7);ctx.fill();}});
+    const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,R*0.6);
+    cg.addColorStop(0,col(0.45,0.5+breath*0.25));cg.addColorStop(0.3,col(0.4,0.18));cg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx,cy,R*0.6,0,7);ctx.fill();
+    ctx.fillStyle='rgba(245,250,255,'+(0.7+breath*0.2)+')';ctx.beginPath();ctx.arc(cx,cy,R*0.07,0,7);ctx.fill();
+    ctx.globalCompositeOperation='source-over';
+    requestAnimationFrame(loop);
+  }
+  loop();
+  return ()=>{S=fit(canvas);};
+}
+
+const refits=[];
+document.querySelectorAll('canvas[data-viz]').forEach(c=>{
+  const k=c.getAttribute('data-viz');
+  const re = k==='neural'?vizNeural(c) : k==='tissue'?vizTissue(c) : vizMandala(c);
+  refits.push(re);
+});
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>refits.forEach(f=>f()),120);});
+</script>
+</body>
+</html>

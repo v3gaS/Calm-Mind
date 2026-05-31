@@ -7,7 +7,7 @@ module.exports = {
     },
     setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
     testMatch: ['**/*.test.js'],
-    collectCoverageFrom: ['src/**/*.js', '!src/index.js', '!src/**/*.d.ts'],
+    collectCoverageFrom: ['src/**/*.js', '!src/**/*.d.ts'],
     transform: {
         '^.+\\.js$': 'babel-jest',
     },

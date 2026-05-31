@@ -1,3 +1,5 @@
+import { logger } from '../utils/logger.js';
+
 /**
  * @class AudioContextManager
  * @description Manages the Web Audio API context and provides a singleton instance
@@ -36,7 +38,7 @@ class AudioContextManager {
             this.masterGain.connect(this.analyser);
             
             this.isInitialized = true;
-            console.log("Audio context initialized successfully");
+            logger.debug('Audio context initialized successfully');
             return true;
         } catch (error) {
             console.error("Failed to initialize audio context:", error);

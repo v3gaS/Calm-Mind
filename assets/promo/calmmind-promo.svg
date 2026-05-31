@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 405" role="img" aria-label="CalmMind promotional preview">
+  <defs>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.45"/>
+      <stop offset="55%" stop-color="#22d3ee" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#080a16" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="720" height="405" fill="#080a16"/>
+  <circle cx="360" cy="202" r="160" fill="url(#core)">
+    <animate attributeName="r" values="150;172;150" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <g fill="none" stroke="#8b5cf6" stroke-opacity="0.35">
+    <circle cx="360" cy="202" r="90" stroke-width="1">
+      <animateTransform attributeName="transform" type="rotate" from="0 360 202" to="360 360 202" dur="24s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="360" cy="202" r="130" stroke="#22d3ee" stroke-opacity="0.25" stroke-width="1">
+      <animateTransform attributeName="transform" type="rotate" from="360 360 202" to="0 360 202" dur="32s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <g>
+    <circle cx="280" cy="160" r="6" fill="#a78bfa">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="440" cy="180" r="5" fill="#22d3ee">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="390" cy="260" r="7" fill="#34d399">
+      <animate attributeName="opacity" values="0.35;0.95;0.35" dur="2.6s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <text x="36" y="48" fill="#e6edf8" font-family="system-ui,sans-serif" font-size="22" font-weight="600">calmmind</text>
+  <rect x="580" y="28" width="112" height="26" rx="12" fill="#22d3ee" fill-opacity="0.15" stroke="#22d3ee" stroke-opacity="0.4"/>
+  <text x="592" y="46" fill="#67e8f9" font-family="system-ui,sans-serif" font-size="11" letter-spacing="0.06em">SYNTHESIZING</text>
+</svg>

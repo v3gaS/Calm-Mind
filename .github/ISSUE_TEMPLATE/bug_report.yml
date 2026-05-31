@@ -1,0 +1,48 @@
+name: Bug report
+description: Report a problem in CalmMind (no secrets or health data)
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Wellness tool — not medical advice.** Do not include personal health records or secrets.
+        **License:** Use requires express permission — [JValachovic@gmail.com](mailto:JValachovic@gmail.com) ([LICENSE](../../LICENSE)).
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Steps to reproduce, expected vs actual behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: entry
+    attributes:
+      label: Which UI?
+      options:
+        - Primary (index.html / Claude Design)
+        - Legacy (index-legacy.html / Three.js)
+        - Both
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser & OS
+      placeholder: e.g. Safari 18 / macOS 15
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Commit or version (if known)
+      placeholder: git sha or tag
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirm
+      options:
+        - label: I did not paste API keys, passwords, or private health information
+          required: true
+        - label: I served the app over HTTP (npm run launch), not file://
+          required: true

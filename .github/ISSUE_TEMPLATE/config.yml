@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Permission & licensing
+    url: mailto:JValachovic@gmail.com
+    about: Request express written permission from John Valachovic
+  - name: Disclaimer & wellness notice
+    url: https://github.com/v3gaS/Audiotistic_application/blob/main/DISCLAIMER.md
+    about: Not a medical device; safe-use guidance
+  - name: Security policy
+    url: https://github.com/v3gaS/Audiotistic_application/blob/main/SECURITY.md
+    about: How to report vulnerabilities responsibly
+  - name: Documentation index
+    url: https://github.com/v3gaS/Audiotistic_application/blob/main/docs/README.md
+    about: Canonical technical docs for contributors

@@ -1,167 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalmMind | Binaural Beat Generator</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237668f8'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="CalmMind — browser-based relaxation audio with binaural beats, ambient nature layers, and audio-reactive canvas visualizers. Wellness tool only; not a medical device." />
+<meta name="author" content="John Valachovic" />
+<title>CalmMind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="client/css/design.css" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'%3E%3Ccircle cx='16' cy='16' r='13' stroke='%238b5cf6' stroke-width='1.4'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%2322d3ee'/%3E%3C/svg%3E" />
 </head>
 <body>
-    <div id="app">
-        <header class="app-header">
-            <img src="Logo.png" alt="CalmMind Logo" class="app-logo">
-            <h1>CalmMind</h1>
-            <p class="tagline">Achieve Your Ideal Mood</p>
-        </header>
-        
-        <section id="settings" class="glass-section">
-            <h2 class="panel-title">Settings</h2>
-            <p class="section-label">Appearance</p>
-            <div class="form-group">
-                <label for="themeSelector">Theme</label>
-                <select id="themeSelector" name="theme">
-                    <option value="dark">Dark (Default)</option>
-                    <option value="light">Light</option>
-                    <option value="space-gray">Space Gray</option>
-                    <option value="silver">Silver</option>
-                    <option value="gold">Gold</option>
-                    <option value="midnight-green">Midnight Green</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="animationsToggle">Animations</label>
-                <select id="animationsToggle" name="animations">
-                    <option value="enabled">Enabled</option>
-                    <option value="disabled">Disabled</option>
-                </select>
-            </div>
-        </section>
-        
-        <section id="playerSection" class="glass-section">
-            <h2 class="panel-title">Session</h2>
-            <p class="section-label">How you feel</p>
-            <div class="form-group">
-                <label for="stressLevel">Stress level (1–10)</label>
-                <input type="range" id="stressLevel" min="1" max="10" value="5">
-                <span id="stressDisplay" class="stress-display">5</span>
-            </div>
+<div id="app" class="state-setup">
+  <div class="nebula"></div>
+  <canvas id="viz"></canvas>
+  <div class="grain"></div>
+  <div class="vignette"></div>
 
-            <div class="form-group">
-                <label for="duration">Duration (minutes)</label>
-                <input type="number" id="duration" min="1" max="60" value="10">
-            </div>
-
-            <p class="section-label">Background</p>
-            <div class="form-group">
-                <label for="ambientSound">Ambient sound</label>
-                <select id="ambientSound">
-                    <option value="none">None</option>
-                    <option value="rain">Rain</option>
-                    <option value="ocean">Ocean</option>
-                    <option value="forest">Forest</option>
-                </select>
-            </div>
-
-            <p class="section-label">Sound & visualization</p>
-            <div class="form-group">
-                <label for="soundType">Sound type</label>
-                <select id="soundType">
-                    <optgroup label="Binaural beats">
-                        <option value="binauralRelax">Binaural · Relaxation</option>
-                        <option value="binauralFocus">Binaural · Focus</option>
-                        <option value="binauralSleep">Binaural · Sleep</option>
-                    </optgroup>
-                    <optgroup label="Isochronic tones">
-                        <option value="isochronicEnergy">Isochronic · Energy</option>
-                        <option value="isochronicMeditate">Isochronic · Meditation</option>
-                    </optgroup>
-                    <optgroup label="Noise & nature">
-                        <option value="pinkNoise">Pink noise · Deep sleep</option>
-                        <option value="nature">Nature · Enhanced</option>
-                    </optgroup>
-                    <optgroup label="Tones & rhythms">
-                        <option value="solfeggio">Solfeggio frequencies</option>
-                        <option value="monaural">Monaural beats</option>
-                        <option value="gamma">Gamma waves</option>
-                        <option value="hrv">HRV coherence</option>
-                    </optgroup>
-                    <optgroup label="Immersive">
-                        <option value="soundBath">Sound bath</option>
-                        <option value="psychoacoustic">Psychoacoustic mood</option>
-                        <option value="neuroacoustic">Neuroacoustic</option>
-                    </optgroup>
-                </select>
-                <p id="soundTypeHint" class="field-hint" aria-live="polite"></p>
-            </div>
-
-            <div class="form-group">
-                <label for="visualizerType">Visualizer</label>
-                <select id="visualizerType">
-                    <option value="particles" selected>Particles</option>
-                    <option value="meshWave">3D mesh wave</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="volumeSlider">Volume</label>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
-            </div>
-
-            <div class="playback-block">
-                <button type="button" id="generateButton" class="btn btn--primary">Generate track</button>
-                <div class="player-controls">
-                    <button type="button" id="playButton" class="btn btn--secondary" disabled>Play</button>
-                    <button type="button" id="stopButton" class="btn btn--secondary" disabled>Stop</button>
-                    <div id="spatialIndicator" class="spatial-indicator hidden">
-                        <span class="left-channel">L</span>
-                        <span class="right-channel">R</span>
-                    </div>
-                </div>
-                <div id="trackInfo" class="track-info"></div>
-            </div>
-        </section>
-        
-        <section id="visualizerContainer" class="glass-section viz-panel">
-            <h2 class="panel-title viz-panel__title">Visualization</h2>
-            <div class="viz-panel__stage">
-                <canvas id="visualizerCanvas"></canvas>
-            </div>
-        </section>
-        
-        <section id="info" class="glass-section">
-            <details class="about-details">
-                <summary class="about-details__summary">About these sound types</summary>
-                <div class="about-details__content">
-                    <h2 class="about-details__heading">CalmMind sound technologies</h2>
-                    <p>CalmMind uses audio approaches to support relaxation, focus, and mental wellbeing:</p>
-                    <ul class="sound-info-list">
-                        <li><strong>Binaural Beats:</strong> Created by playing two slightly different frequencies in each ear, binaural beats can influence brainwave activity to promote relaxation. Best experienced with headphones.</li>
-                        <li><strong>Isochronic Tones:</strong> Regular beats of a single tone that can entrain brainwaves to specific frequencies, useful for meditation and focus.</li>
-                        <li><strong>Pink Noise:</strong> A balanced noise spectrum that helps mask disruptive sounds and promote deep sleep.</li>
-                        <li><strong>Nature Sounds:</strong> Enhanced bioacoustic frequencies from natural environments that reduce stress and anxiety.</li>
-                        <li><strong>Solfeggio Frequencies:</strong> Ancient musical tones with healing properties that are said to affect different aspects of consciousness and wellbeing.</li>
-                        <li><strong>Monaural Beats:</strong> Similar to binaural beats but with modulation happening before reaching the ears, making them effective even without headphones.</li>
-                        <li><strong>Gamma Waves:</strong> Higher frequency brainwave patterns associated with peak cognitive performance, learning, and memory.</li>
-                        <li><strong>HRV Coherence:</strong> Sound patterns synchronized with optimal breathing rates to promote heart-brain coherence and reduce stress.</li>
-                        <li><strong>Sound Bath:</strong> A virtual recreation of traditional Tibetan singing bowls and gongs, creating an immersive healing environment with rich harmonics and spatial audio positioning.</li>
-                        <li><strong>Psychoacoustic Harmony:</strong> Advanced harmonic progressions and spatial audio designed to directly influence emotional state through carefully crafted timbres and resonances.</li>
-                        <li><strong>Neuroacoustic:</strong> Brain-optimized frequencies that enhance cognitive function and mental clarity.</li>
-                    </ul>
-                    <p class="tip"><strong>Tip:</strong> For most sound types, headphones are recommended for the best experience. The Sound Bath and Psychoacoustic features are especially immersive with good stereo headphones.</p>
-                </div>
-            </details>
-        </section>
-        
-        <footer>
-            <p>&copy; 2026 CalmMind. All rights reserved.</p>
-        </footer>
+  <div class="ui">
+    <div class="topbar">
+      <div class="brand">
+        <img class="brand-logo" src="assets/branding/CalmMind_Logo.jpg" alt="CalmMind" width="160" height="48" decoding="async" />
+      </div>
+      <div class="status"><span class="dot"></span><span id="statusText">READY</span></div>
     </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="audio.js"></script>
-    <script src="visualizer.js"></script>
-    <script src="app.js"></script>
+
+    <div id="headphonesHint" class="headphones-hint hidden" role="status" aria-live="polite">
+      Headphones recommended for this session for best binaural or bilateral effect.
+    </div>
+
+    <div class="compose panel" id="setup">
+      <h2>Compose your session</h2>
+      <div class="sub">Tune the sound to how you feel — we'll synthesize a track to guide your mind there.</div>
+
+      <div class="field">
+        <span class="lab">How you feel · stress</span>
+        <input type="range" id="stress" min="1" max="10" step="1" value="5" />
+        <div class="slabel"><span class="v" id="stressVal">5</span><span class="t" id="stressLabel">Balanced</span></div>
+      </div>
+
+      <div class="field row2">
+        <div>
+          <span class="lab">Duration</span>
+          <input type="range" id="duration" min="1" max="60" step="1" value="10" style="margin-top:14px" />
+          <div class="slabel"><span class="v" id="durationVal">10<span style="font-size:12px"> min</span></span><span class="t">1–60</span></div>
+        </div>
+        <div>
+          <span class="lab">Ambient layer</span>
+          <div class="sel" style="margin-top:10px"><select id="ambient"></select></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="lab">Sound type</span>
+        <div class="sel"><select id="soundType"></select></div>
+        <div class="hint" id="soundHint"></div>
+      </div>
+
+      <div class="field">
+        <span class="lab">Visualizer</span>
+        <div class="seg" id="vizSeg">
+          <button type="button" data-viz="neural" class="on">Neural Bloom</button>
+          <button type="button" data-viz="tissue">Living Tissue</button>
+          <button type="button" data-viz="mandala">Mandala</button>
+        </div>
+      </div>
+
+      <div class="field row2">
+        <div>
+          <span class="lab">Calm before · 1–5</span>
+          <input type="range" id="moodBefore" min="1" max="5" step="1" value="3" style="margin-top:14px" />
+          <div class="slabel"><span class="v mood-val" id="moodBeforeVal">3</span><span class="t">check-in</span></div>
+        </div>
+        <div>
+          <span class="lab">Calm after · 1–5</span>
+          <input type="range" id="moodAfter" min="1" max="5" step="1" value="3" disabled style="margin-top:14px" />
+          <div class="slabel"><span class="v mood-val" id="moodAfterVal">3</span><span class="t">after session</span></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="lab">Guided recipes</span>
+        <div class="presets" id="presetRow" style="margin-top:10px"></div>
+      </div>
+
+      <button type="button" class="gen" id="generate">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        Generate track
+      </button>
+    </div>
+
+    <p class="wellness-note">CalmMind is a wellness tool, not a medical device. Brain-band labels reflect target frequencies, not live EEG.</p>
+
+    <div class="breathcue" id="breathCue">
+      <div class="word" id="breathWord">Breathe in</div>
+      <div class="sub" id="breathSub">follow the bloom</div>
+    </div>
+
+    <div class="panel panel-left edge">
+      <span class="lab">Brain state</span>
+      <div class="band"><span class="name" id="bandName">Theta</span><span class="hz" id="bandHz">7.83 Hz</span></div>
+      <div class="bdesc" id="bandDesc"></div>
+      <div class="meters" id="meters">
+        <div class="meter"><span class="ml">DELTA</span><div class="track"><div class="fill" data-band="Delta"></div></div></div>
+        <div class="meter"><span class="ml">THETA</span><div class="track"><div class="fill" data-band="Theta"></div></div></div>
+        <div class="meter"><span class="ml">ALPHA</span><div class="track"><div class="fill" data-band="Alpha"></div></div></div>
+        <div class="meter"><span class="ml">BETA</span><div class="track"><div class="fill" data-band="Beta"></div></div></div>
+        <div class="meter"><span class="ml">GAMMA</span><div class="track"><div class="fill" data-band="Gamma"></div></div></div>
+      </div>
+      <div class="amprow"><span class="lab">Live signal</span><div class="track"><div class="afill" id="ampFill"></div></div></div>
+    </div>
+
+    <div class="panel panel-right edge">
+      <span class="lab">Binaural offset</span>
+      <div class="ears">
+        <div class="ear l"><div class="ring"><span>L</span></div><div class="freq"><b id="leftHz">200</b> Hz</div></div>
+        <div class="ear r"><div class="ring"><span>R</span></div><div class="freq"><b id="rightHz">207.8</b> Hz</div></div>
+      </div>
+      <div class="beatline">PERCEIVED BEAT · <b id="beatHz">7.83 Hz</b></div>
+      <div class="binnote" id="binNote"></div>
+      <div class="timeline">
+        <span class="lab">Session timeline</span>
+        <div class="tl-track" id="tlTrack"></div>
+        <div class="tl-empty" id="tlEmpty">Steady single-phase session.</div>
+      </div>
+    </div>
+
+    <div class="dock panel edge">
+      <button type="button" class="tbtn" id="playBtn" aria-label="Play/Pause">
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button type="button" class="tbtn ghost" id="stopBtn" aria-label="Stop">
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      </button>
+      <div class="dock-mid">
+        <div class="nowplay"><span id="nowTitle">Binaural · Relaxation</span><span class="sub" id="nowSub">· Level 5 · 10 min</span></div>
+        <div class="scrub" id="scrub"><div class="done" id="scrubDone"></div><div class="knob" id="scrubKnob"></div></div>
+        <div class="timecode"><span id="elapsed">00:00</span><span id="total">10:00</span></div>
+      </div>
+      <div class="dock-right">
+        <div class="vol">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 9v6h4l5 5V4L9 9H5z"/></svg>
+          <input type="range" id="volume" min="0" max="100" step="1" value="60" />
+        </div>
+        <div class="miniseg" id="vizSeg2">
+          <button type="button" data-viz="neural" class="on">Neural</button>
+          <button type="button" data-viz="tissue">Tissue</button>
+          <button type="button" data-viz="mandala">Mandala</button>
+        </div>
+        <button type="button" class="tbtn ghost" id="editBtn" aria-label="Edit session" title="Edit session">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-4L16 5l4 4L8 21H4z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="client/js/ambient-loader.js"></script>
+<script src="client/js/breath-patterns.js"></script>
+<script src="client/js/protocols.js"></script>
+<script src="client/js/frequency-scheduler.js"></script>
+<script src="client/js/emdr-audio.js"></script>
+<script src="client/js/state-manager.js"></script>
+<script src="client/js/audio.js"></script>
+<script src="client/js/audio-reactive-bridge.js"></script>
+<script src="client/js/calm-viz.js"></script>
+<script src="client/js/design-bridge.js"></script>
+<script src="client/js/design-shell.js"></script>
 </body>
 </html>

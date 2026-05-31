@@ -296,11 +296,8 @@ class ParticleVisualizer extends Visualizer {
         }
     }
     
-    drawParticle(particle) {
-        // This is a placeholder for actual WebGL drawing
-        // In a real implementation, you would use shaders and proper WebGL methods
-        // For now, we'll just log it to show it's being called
-        console.log('Drawing particle at', particle.x, particle.y);
+    drawParticle(_particle) {
+        // Placeholder for WebGL drawing — shaders would render particles here.
     }
     
     resize(width, height) {

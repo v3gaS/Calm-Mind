@@ -7,6 +7,7 @@ import { VisualizerManager } from './VisualizerManager.js';
 import { stateManager } from '../core/StateManager.js';
 import { eventBus } from '../core/EventBus.js';
 import { getVisualizerConfig, getSoundTypeVisualizerConfig, validateVisualizerConfig } from './configs/configManager.js';
+import { logger } from '../utils/logger.js';
 
 export { getVisualizerConfig, getSoundTypeVisualizerConfig, validateVisualizerConfig };
 
@@ -32,8 +33,7 @@ export function initializeVisualizer(canvas, options = {}) {
         // Register visualizer with state manager
         stateManager.set('visualizerManager', visualizerManager);
         
-        // Log initialization
-        console.log('Visualizer initialized with options:', options);
+        logger.debug('Visualizer initialized with options:', options);
         eventBus.emit('visualizer:initialized', { success: true });
         
         return visualizerManager;

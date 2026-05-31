@@ -1,0 +1,43 @@
+name: Permission request
+description: Request express written permission to use, fork, or deploy this project
+title: "[Permission]: "
+labels: ["permission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Copyright © John Valachovic.** Permission: [JValachovic@gmail.com](mailto:JValachovic@gmail.com) — see [LICENSE](../../LICENSE).
+  - type: input
+    id: name
+    attributes:
+      label: Your name or organization
+    validations:
+      required: true
+  - type: textarea
+    id: use
+    attributes:
+      label: Intended use
+      description: e.g. evaluation, classroom demo, fork, commercial product, deployment
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Which parts (full repo, client only, assets, documentation)
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Your reply-to email
+      placeholder: JValachovic@gmail.com is the maintainer contact for permission replies
+    validations:
+      required: true
+  - type: checkboxes
+    id: ack
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: I understand that cloning or viewing the repo does not grant a license
+          required: true

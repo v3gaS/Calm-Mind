@@ -1,11 +1,30 @@
+# Dependencies & build
 node_modules/
 coverage/
 dist/
 build/
+
+# OS & editor
 .DS_Store
-*.log
-npm-debug.log*
-.env
-.env.*
+Thumbs.db
+**/.thumbnail
 .idea/
 .vscode/
+*.swp
+*~
+
+# Secrets & local env
+.env
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+
+# Promo capture intermediates (regenerate via scripts/capture-app-promo.mjs)
+assets/promo/capture-frames/
+
+# Local Claude Design exports — superseded by archive/design-prototype/ + shipped client/
+Calm Mind/
+Calm Mind (1)/
+Calm Mind Claude Front End Design Files/
