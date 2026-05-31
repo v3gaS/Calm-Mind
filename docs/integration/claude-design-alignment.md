@@ -71,9 +71,11 @@ Full behavior table and per-mode mapping: [`subsystems/visualization.md`](../sub
 
 ## DOM IDs (design UI)
 
-`#app`, `#viz`, `.brand-logo`, `.brand-title` (h1), `.brand-tagline`, `#stress`, `#duration`, `#ambient`, `#soundType`, `#generate`, `.wellness-note`, `.compose-legal` (About · Privacy · Disclaimer under wellness note), `#volume`, `#headphonesHint` (auto-dismiss ~4.5s on compose; hidden while playing), `#moodBefore`, `#moodAfter`, playing chrome (`#bandName`, `#beatHz`, dock controls).
+`#app`, `#viz`, `.setup-scroll`, `.setup-inner`, `.brand-logo`, `.brand-title` (h1), `.brand-tagline`, `#stress`, `#duration`, `#ambient`, `#soundType`, `#generate`, `.wellness-note`, `.compose-legal` (uppercase lab-style footer links; `·` separators hidden via CSS), `#volume`, `#headphonesHint` (icon + text inside scroll column; auto-dismiss ~4.5s; hidden while playing), `#moodBefore`, `#moodAfter`, playing chrome (`#bandName`, `#beatHz`, dock controls).
 
-**Branding:** [`assets/branding/CalmMind_Logo.jpg`](../../assets/branding/CalmMind_Logo.jpg) (top bar).
+**Layout:** `.setup-scroll` fills the viewport below the top bar — centers the compose card when tall enough, scrolls on short viewports. Top bar has a fade gradient (`::before`) so content does not clash under the logo.
+
+**Branding:** [`assets/branding/CalmMind_Logo.jpg`](../../assets/branding/CalmMind_Logo.jpg) (top bar); [`assets/branding/calm-mind-mark.svg`](../../assets/branding/calm-mind-mark.svg) (gradient mark, favicon source). Favicon is inline SVG in `index.html` `<head>`.
 
 Legacy IDs (`#stressLevel`, `#visualizerCanvas`) remain on `index-legacy.html` only.
 

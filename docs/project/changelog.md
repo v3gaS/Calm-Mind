@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Design UI (`calm-mind-fixes`): scrollable `.setup-scroll` compose layout (no clip on short screens); top-bar fade; headphones hint with icon in scroll column; lab-style `.compose-legal` footer; gradient favicon; `design-shell.js` transform aligned with relative compose positioning
 - Compose panel: single faint legal row under wellness note (Manrope); removed duplicate top-bar links
 - Public pages: removed personal name from footers and `index.html` meta / JSON-LD author
 
